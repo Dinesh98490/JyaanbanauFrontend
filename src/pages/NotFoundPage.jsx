@@ -4,7 +4,9 @@ import { Home, ArrowLeft, Search } from "lucide-react";
 
 export default function NotFound() {
   const navigate = useNavigate();
+ 
 
+  // this is the not found page
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="max-w-md mx-auto text-center px-4">

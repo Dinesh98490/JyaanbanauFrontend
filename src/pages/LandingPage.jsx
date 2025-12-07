@@ -1,11 +1,10 @@
-// src/pages/LandingPage.jsx
 import React from "react";
 import { Check, Users, Target, Calendar, Dumbbell, CreditCard, Shield, Star } from "lucide-react";
 
 import { IMAGE_PATHS } from "../common/ImageConstant";
 
 export default function LandingPage() {
-  const bgColor = "bg-[#EFF6FF]"; // Light blue background
+  const bgColor = "bg-[#EFF6FF]"; 
 
   
   // Hero Section
