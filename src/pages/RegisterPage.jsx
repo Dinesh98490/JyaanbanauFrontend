@@ -72,6 +72,7 @@ export function RegisterForm() {
             type="text"
             name="username"
             value={formData.username}
+            placeholder="enter your username"
             onChange={handleChange}
             className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
           />
@@ -89,6 +90,7 @@ export function RegisterForm() {
             type="email"
             name="email"
             value={formData.email}
+            placeholder="enter your email"
             onChange={handleChange}
             className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
           />
@@ -106,6 +108,7 @@ export function RegisterForm() {
             type="password"
             name="password"
             value={formData.password}
+            placeholder="enter your password"
             onChange={handleChange}
             className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
           />
@@ -123,6 +126,7 @@ export function RegisterForm() {
           type="password"
           name="password"
           value={formData.password}
+          placeholder="Re-type password"
           onChange={handleChange}
           className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
         />

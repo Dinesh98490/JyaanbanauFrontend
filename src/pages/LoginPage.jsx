@@ -55,6 +55,7 @@ export function LoginForm() {
           <input
             type="email"
             name="email"
+            placeholder="enter your email"
             value={formData.email}
             onChange={handleChange}
             className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
@@ -73,6 +74,7 @@ export function LoginForm() {
             type="password"
             name="password"
             value={formData.password}
+            placeholder="enter your password"
             onChange={handleChange}
             className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
           />
