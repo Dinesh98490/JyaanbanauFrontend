@@ -126,7 +126,7 @@ export function RegisterForm() {
           type="password"
           name="password"
           value={formData.password}
-          placeholder="Re-type password"
+          placeholder="Re-type your password"
           onChange={handleChange}
           className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
         />

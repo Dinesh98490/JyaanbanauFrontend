@@ -1,17 +1,15 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { IMAGE_PATHS } from "../common/ImageConstant";
 
 export function ForgetPasswordForm() {
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
-
-  const handleChange = (e) => {
-    setEmail(e.target.value);
-  };
+  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
     if (!email.trim()) {
       setError("Email is required");
       return;
@@ -21,9 +19,10 @@ export function ForgetPasswordForm() {
     }
 
     setError("");
-    console.log("Reset link sent to:", email);
     alert("Reset link sent to your email!");
-    setEmail("");
+    
+    // Redirect to update password page
+    navigate("/updatepassword");
   };
 
   return (
@@ -40,16 +39,15 @@ export function ForgetPasswordForm() {
           </label>
           <input
             type="email"
-            name="email"
             value={email}
-            placeholder="enter your email"
-            onChange={handleChange}
+            placeholder="Enter your email"
+            onChange={(e) => setEmail(e.target.value)}
             className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
           />
           {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
         </div>
 
-        {/* Send Reset Link Button */}
+        {/* Button */}
         <button
           type="submit"
           className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-full transition-colors duration-200 text-lg"
@@ -62,26 +60,24 @@ export function ForgetPasswordForm() {
 }
 
 export default function ForgetPasswordPage() {
-    return (
-      <main className="min-h-screen" style={{ backgroundColor: "#EFF6FF" }}>
-        <div className="grid grid-cols-1 lg:grid-cols-2 min-h-screen">
-          {/* Left Column - Form */}
-          <div className="flex items-center justify-center px-6 py-12 lg:px-12">
-            <ForgetPasswordForm />
-          </div>
-  
-          {/* Right Column - Image */}
-          <div
-            className="hidden lg:flex flex-col items-start justify-start px-6 pt-6"
-            style={{ backgroundColor: "#EFF6FF" }}
-          >
-            <img
-              src={IMAGE_PATHS.backgroundremovelogo}
-              alt="forget password"
-              className="w-full max-w-lg object-left object-contain -translate-x-5"
-            />
-          </div>
+  return (
+    <main className="min-h-screen" style={{ backgroundColor: "#EFF6FF" }}>
+      <div className="grid grid-cols-1 lg:grid-cols-2 min-h-screen">
+        <div className="flex items-center justify-center px-6 py-12 lg:px-12">
+          <ForgetPasswordForm />
         </div>
-      </main>
-    );
-  }
+
+        <div
+          className="hidden lg:flex flex-col items-end justify-end min-h-screen pr-12 pb-12"
+          style={{ backgroundColor: "#EFF6FF" }}
+        >
+          <img
+            src={IMAGE_PATHS.backgroundremovelogo}
+            alt="forget password"
+            className="max-w-lg object-contain mb-24 mr-20"
+          />
+        </div>
+      </div>
+    </main>
+  );
+}
