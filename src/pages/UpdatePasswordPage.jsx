@@ -92,7 +92,7 @@ export default function UpdatePasswordPage() {
           <img
             src={IMAGE_PATHS.backgroundremovelogo}
             alt="update password"
-            className="max-w-lg object-contain mb-12 mr-12"
+            className="max-w-lg object-contain mb-16 mr-16"
           />
         </div>
       </div>

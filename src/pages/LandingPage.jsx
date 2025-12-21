@@ -144,6 +144,10 @@ const features = [
     </Element>
   );
 
+
+
+
+  
   // Pricing Section
   const plans = [
     { name: "Basic", price: "2999", description: "Perfect for new gyms", features: ["Basic Members", "No Trainer Plan", "Limited Access", "No Payment Plan"] },
@@ -221,6 +225,10 @@ const features = [
       </section>
     </Element>
   );
+
+
+
+
 
   // Testimonials Section
   const testimonials = [

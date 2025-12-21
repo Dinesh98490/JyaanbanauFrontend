@@ -105,7 +105,9 @@ export function LoginForm() {
           type="submit"
           className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-full transition-colors duration-200 text-lg"
         >
-          Login
+           <Link to="/customer/membership" className="text-blue-600 underline font-medium">
+              Login
+            </Link>
         </button>
 
         {/* Signup Link */}
