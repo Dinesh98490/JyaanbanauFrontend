@@ -5,7 +5,7 @@ export default function Payment() {
   const [showCardDetails, setShowCardDetails] = useState(false)
 
   return (
-    <div className="min-h-screen bg-[#e8ecf0] p-4 md:p-8">
+    <div className="min-h-screen bg-white p-4 md:p-8 mt-8 ">
       <div className="mx-auto max-w-6xl">
 
         {/* Header */}

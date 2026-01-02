@@ -69,6 +69,7 @@ export const router = createBrowserRouter([
             {path: "/customer/diets", element: <Diets/>},
             {path: "/customer/payment", element: <Payment/>},
             {path: "/customer/profile", element: <ProfilePage/> },
+            { path: "/customer/membership", element: <Membership/> },
 
             
 
@@ -81,7 +82,7 @@ export const router = createBrowserRouter([
         </ProtectedRoute>,
         errorElement: <NotFound />,
         children: [
-          { path: "/customer/membership", element: <Membership/> },
+          
           
           
         ],

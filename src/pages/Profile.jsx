@@ -14,7 +14,7 @@ export default function Profile() {
   const [profileImage, setProfileImage] = useState("/placeholder.svg")
 
   return (
-    <div className="min-h-screen bg-[#e8eef5] p-4 md:p-8">
+    <div className="min-h-screen bg-white p-4 md:p-8 mt-8">
       <div className="mx-auto max-w-7xl space-y-6">
 
         {/* Header */}

@@ -40,7 +40,7 @@ export default function Progress() {
   const formatNumber = (num) => num.toLocaleString()
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6 md:p-12">
+    <main className="min-h-screen bg-white p-6 md:p-12 mt-8">
       <div className="mx-auto max-w-7xl">
 
         {/* Header */}
