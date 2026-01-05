@@ -6,24 +6,22 @@ import CustomerFooter from '../components/customerfooter/CustomerFooter';
 import Navbar from '../components/navbar/Navbar';
 
 const CustomerLayout = () => {
-  
-  const [activeItem, setActiveItem] = useState("dashboard");
-
   return (
-    <div className="flex h-screen">
-      
-      <CustomerNavbar activeItem={activeItem} setActiveItem={setActiveItem} />
-      <CustomerNavbar activeItem={activeItem} setActiveItem={setActiveItem} />
+    <div className="min-h-screen flex flex-col">
+      {/* Top Navbar */}
+      <CustomerNavbar />
 
-      <div className="flex flex-col flex-1">
-        <CustomerNavbar/>
-        <main className="flex-1 p-4 overflow-y-auto">
-          <Outlet />
-        </main>
-        <CustomerFooter/>
-      </div>
+      {/* Page Content */}
+      <main className="flex-1 p-4 bg-gray-50">
+        <Outlet />
+      </main>
+
+      {/* Footer */}
+      <CustomerFooter />
     </div>
   );
 };
 
 export default CustomerLayout;
+
+

@@ -23,8 +23,10 @@ export default function LandingPage() {
             <p className="text-lg text-muted-foreground leading-relaxed">
               All-in-one gym management for owners, coaches, and members. Streamline operations and grow your business.
             </p>
-            <button className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 w-full md:w-auto font-medium transition">
+            <button className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 w-full md:w-auto font-medium transition" >
               Get Started
+
+              
             </button>
           </div>
 

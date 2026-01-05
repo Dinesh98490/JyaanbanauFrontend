@@ -1,11 +1,18 @@
 import { useState } from "react"
 import { Search } from "lucide-react"
+import { IMAGE_PATHS } from "../common/ImageConstant"
 
 const foodItems = [
   {
     id: "1",
     name: "Meat",
-    image: "/raw-steak-with-herbs-on-plate.jpg",
+    image: (
+      <img
+        src={IMAGE_PATHS.man}
+        alt="jyaanbanau"
+        className="w-full h-full object-cover"
+      />
+    ),
     categories: ["High Protein", "High Calorie"],
   },
   {

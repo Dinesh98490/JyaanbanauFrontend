@@ -1,18 +1,30 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { IMAGE_PATHS } from "../common/ImageConstant";
+// import api from "../api/api"; // Removed for mock implementation
 
 export function LoginForm() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
     rememberMe: false,
   });
 
+  /* const [errors, setErrors] = useState({
+    email: "",
+    password: "",
+    root: "",
+  }); */
+
+  // Simplified error state for mock demo
   const [errors, setErrors] = useState({
     email: "",
     password: "",
+    root: "",
   });
+
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -20,6 +32,8 @@ export function LoginForm() {
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
+    // Clear root error on change
+    if (errors.root) setErrors(prev => ({ ...prev, root: "" }));
   };
 
   const validateForm = () => {
@@ -33,12 +47,30 @@ export function LoginForm() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (validateForm()) {
-      console.log("Login data:", formData);
-      alert("Login successful!");
-      setFormData({ email: "", password: "", rememberMe: false });
+      setIsLoading(true);
+
+      // MOCK LOGIN LOGIC
+      try {
+        // Simulate network delay
+        await new Promise(resolve => setTimeout(resolve, 1500));
+
+        // Mock success
+        const mockToken = "mock-jwt-token-12345";
+        localStorage.setItem("token", mockToken);
+        localStorage.setItem("role", "Customer");
+
+        // alert("Login successful!"); // Optional: remove alert for smoother UX
+        navigate("/customer/membership");
+
+      } catch (error) {
+        console.error("Mock login error:", error);
+        setErrors(prev => ({ ...prev, root: "Something went wrong" }));
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -100,14 +132,20 @@ export function LoginForm() {
           </Link>
         </div>
 
+        {/* Error Message */}
+        {errors.root && (
+          <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded relative" role="alert">
+            <span className="block sm:inline">{errors.root}</span>
+          </div>
+        )}
+
         {/* Login Button */}
         <button
           type="submit"
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-full transition-colors duration-200 text-lg"
+          disabled={isLoading}
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-full transition-colors duration-200 text-lg disabled:opacity-50"
         >
-           <Link to="/customer/membership" className="text-blue-600 underline font-medium">
-              Login
-            </Link>
+          {isLoading ? "Logging in..." : "Login"}
         </button>
 
         {/* Signup Link */}

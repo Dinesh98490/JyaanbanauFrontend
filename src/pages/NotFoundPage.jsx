@@ -1,59 +1,71 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Home, ArrowLeft, Search } from "lucide-react";
+import { Home, ArrowLeft, Dumbbell, Search } from "lucide-react";
 
 export default function NotFound() {
   const navigate = useNavigate();
- 
 
-  // this is the not found page
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md mx-auto text-center px-4">
-        <div className="mb-8">
-          <h1 className="text-9xl font-bold text-gray-200">404</h1>
-          <h2 className="text-2xl font-semibold text-gray-800 mb-2">Page Not Found</h2>
-          <p className="text-gray-500 mb-8">
-            Sorry, we couldn't find the page you're looking for. It might have been moved, deleted, or you entered the wrong URL.
-          </p>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-gray-900 to-black text-white px-4">
+      <div className="max-w-md text-center">
+        
+        {/* Icon */}
+        <div className="flex justify-center mb-6">
+          <div className="p-6 rounded-full bg-orange-500/10 border border-orange-500 animate-pulse">
+            <Dumbbell className="h-12 w-12 text-orange-500" />
+          </div>
         </div>
 
-        <div className="space-y-4">
+        {/* 404 */}
+        <h1 className="text-8xl font-extrabold text-orange-500 drop-shadow-lg">
+          404
+        </h1>
+
+        <h2 className="text-3xl font-bold mt-4">
+          Workout Not Found 💪
+        </h2>
+
+        <p className="text-gray-400 mt-3">
+          Looks like this page skipped leg day.  
+          The link may be broken or the page has been moved.
+        </p>
+
+        {/* Buttons */}
+        <div className="mt-8 space-y-4">
           <Link
             to="/"
-            className="w-full inline-flex items-center justify-center px-4 py-2 bg-orange-500 text-white font-medium rounded-md hover:bg-orange-600 transition"
+            className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-orange-500 text-black font-semibold rounded-lg hover:bg-orange-600 transition"
           >
-            <Home className="mr-2 h-4 w-4" />
-            Go Home
+            <Home size={18} />
+            Back to Gym Dashboard
           </Link>
 
-          <div className="flex gap-2">
+          <div className="flex gap-3">
             <button
               onClick={() => navigate(-1)}
-              className="flex-1 inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-100 transition"
+              className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 border border-gray-700 rounded-lg hover:bg-gray-800 transition"
             >
-              <ArrowLeft className="mr-2 h-4 w-4" />
+              <ArrowLeft size={16} />
               Go Back
             </button>
 
             <Link
               to="/search"
-              className="flex-1 inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-100 transition"
+              className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 border border-gray-700 rounded-lg hover:bg-gray-800 transition"
             >
-              <Search className="mr-2 h-4 w-4" />
+              <Search size={16} />
               Search
             </Link>
           </div>
         </div>
 
-        <div className="mt-8 text-sm text-gray-500">
-          <p>
-            Need help?{" "}
-            <Link to="/contact" className="text-orange-600 hover:underline">
-              Contact support
-            </Link>
-          </p>
-        </div>
+        {/* Footer */}
+        <p className="mt-8 text-sm text-gray-500">
+          Need assistance?{" "}
+          <Link to="/contact" className="text-orange-400 hover:underline">
+            Contact Gym Support
+          </Link>
+        </p>
       </div>
     </div>
   );
