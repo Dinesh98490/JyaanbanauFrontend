@@ -1,27 +1,26 @@
 import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
-
-import AdminNavbar from '../components/adminnavbar/AdminNavbar';
 import AdminSidebar from '../components/adminsidebar/AdminSidebar';
-
+import AdminNavbar from '../components/adminnavbar/AdminNavbar';
 
 const AdminLayout = () => {
+  //   activeItem state and handler
+  const [activeItem, setActiveItem] = useState("dashboard");
+
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Top Navbar */}
-      <AdminNavbar />
+    <div className="flex h-screen">
+      
+      <AdminSidebar activeItem={activeItem} setActiveItem={setActiveItem} />
 
-      {/* Page Content */}
-      <main className="flex-1 p-4 bg-gray-50">
-        <Outlet />
-      </main>
-
-      {/* Footer */}
-      <AdminNavbar />
+      <div className="flex flex-col flex-1">
+        <AdminNavbar />
+        <main className="flex-1 p-4 overflow-y-auto">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 };
 
 export default AdminLayout;
-
 

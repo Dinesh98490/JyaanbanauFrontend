@@ -57,13 +57,18 @@ export function LoginForm() {
         // Simulate network delay
         await new Promise(resolve => setTimeout(resolve, 1500));
 
-        // Mock success
+        // Mock success with dynamic role based on email
         const mockToken = "mock-jwt-token-12345";
         localStorage.setItem("token", mockToken);
-        localStorage.setItem("role", "Customer");
 
-        // alert("Login successful!"); // Optional: remove alert for smoother UX
-        navigate("/customer/membership");
+        // Check if email indicates an admin (simple check for demo)
+        if (formData.email.toLowerCase().includes("admin")) {
+          localStorage.setItem("role", "Admin");
+          navigate("/admin/dashboard");
+        } else {
+          localStorage.setItem("role", "Customer");
+          navigate("/customer/membership");
+        }
 
       } catch (error) {
         console.error("Mock login error:", error);

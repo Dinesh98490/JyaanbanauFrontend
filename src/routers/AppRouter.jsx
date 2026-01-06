@@ -16,43 +16,8 @@ import Payment from '../pages/Payment';
 import ProfilePage from '../pages/Profile';
 import AdminLayout from '../layouts/AdminLayout';
 import DashboardPage from '../pages/DashboardPage';
+import MemberPage from '../pages/MemberPage';
 
-
-
-
-// export const router = createBrowserRouter([
-//     {
-//         element: <AppLayout />,
-//         errorElement: <NotFound />,
-//         children: [
-//             { path: "/", element: <LandingPage /> },
-//             { path: "/register", element: <RegisterPage /> },
-//             { path: "/login", element: <LoginPage /> },
-//             { path: "/forgotpassword", element: <ForgetPasswordPage /> },
-//             { path: "/updatepassword", element: <UpdatePasswordPage /> },
-//             { path: "/customer/membership", element: <Membership /> },
-//             { path: "/customer/classes", element: <Classes /> },
-//             { path: "/customer/progress", element: <Progress /> },
-//             { path: "/customer/diets", element: <Diets /> },
-//             { path: "/customer/payment", element: <Payment /> },
-//             { path: "/customer/profile", element: <ProfilePage /> },
-//         ],
-//     },
-//     {
-//         element: <ProtectedRoute requiredRole="Customer">
-//             <CustomerLayout />
-//         </ProtectedRoute>,
-//         errorElement: <NotFound />,
-//         children: [
-//             // { path: "/customer/membership", element: <Membership /> },
-//             // { path: "/customer/classes", element: <Classes /> },
-//             // { path: "/customer/progress", element: <Progress /> },
-//             // { path: "/customer/diets", element: <Diets /> },
-//             // { path: "/customer/payment", element: <Payment /> },
-//             // { path: "/customer/profile", element: <ProfilePage /> },
-//         ],
-//     },
-// ]);
 
 export const router = createBrowserRouter([
     {
@@ -87,13 +52,14 @@ export const router = createBrowserRouter([
     {
       path: "/admin",
       element: (
-        <ProtectedRoute requiredRole="admin">
+        <ProtectedRoute requiredRole="Admin">
           <AdminLayout />
         </ProtectedRoute>
       ),
       children: [
         { index: true, element: <Navigate to="dashboard" /> },
-        {path: "dashboard", element: <DashboardPage />}, 
+        {path: "dashboard", element: <DashboardPage />},
+        {path: "members", element:<MemberPage/>}, 
         
       ],
     },
