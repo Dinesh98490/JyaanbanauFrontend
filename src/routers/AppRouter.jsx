@@ -17,6 +17,12 @@ import ProfilePage from '../pages/Profile';
 import AdminLayout from '../layouts/AdminLayout';
 import DashboardPage from '../pages/DashboardPage';
 import MemberPage from '../pages/MemberPage';
+import Trainers from '../pages/Trainers';
+import AdminClass from '../pages/AdminClass';
+import Attendance from '../pages/Attendance';
+import Subscriptions from '../pages/Subscriptions';
+import Setting from '../pages/Setting';
+import AdminDiets from '../pages/AdminDiets';
 
 
 export const router = createBrowserRouter([
@@ -60,6 +66,12 @@ export const router = createBrowserRouter([
         { index: true, element: <Navigate to="dashboard" /> },
         {path: "dashboard", element: <DashboardPage />},
         {path: "members", element:<MemberPage/>}, 
+        {path: "trainers", element:<Trainers/>},
+        {path: "classes", element:<AdminClass/>},
+        {path: "attendance", element:<Attendance/>},
+        {path: "subscriptions", element:<Subscriptions/>},
+        {path: "diets", element:<AdminDiets/>},
+        {path: "settings", element:<Setting/>},
         
       ],
     },

@@ -11,10 +11,10 @@ export default function AdminNavbar({ onMenuClick }) {
             onClick={onMenuClick}
             className="p-2 rounded-lg hover:bg-gym-hover transition"
           >
-            <Menu size={22} />
+            {/* <Menu size={22} /> */}
           </button>
           <h1 className="text-2xl font-bold text-gym-text">
-            Admin Dashboard
+            {/* Admin Dashboard */}
           </h1>
         </div>
 
