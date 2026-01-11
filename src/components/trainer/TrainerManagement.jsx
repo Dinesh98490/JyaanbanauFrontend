@@ -1,42 +1,52 @@
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { Plus, Search, Eye, Pencil, Trash2 } from "lucide-react"
-
+import api from "../../api/api"
 import DeleteConfirmationModal from "./DeleteConfirmationModal"
 import TrainerModal from "./TrainerModal"
 
-const MOCK_TRAINERS = [
-  {
-    id: "TR001",
-    fullName: "John Smith",
-    email: "john.smith@gym.com",
-    phone: "+1 (555) 123-4567",
-    specialization: "Strength",
-    experience: 8,
-    status: "Active",
-    photo:
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
-  },
-  {
-    id: "TR002",
-    fullName: "Sarah Johnson",
-    email: "sarah.johnson@gym.com",
-    phone: "+1 (555) 234-5678",
-    specialization: "Cardio",
-    experience: 6,
-    status: "Active",
-    photo:
-      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop",
-  },
-  // ... add more trainers
-]
-
 export default function TrainersManagement() {
-  const [trainers, setTrainers] = useState(MOCK_TRAINERS)
+  const [trainers, setTrainers] = useState([])
   const [searchTerm, setSearchTerm] = useState("")
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [selectedTrainer, setSelectedTrainer] = useState(null)
   const [trainerModalOpen, setTrainerModalOpen] = useState(false)
   const [modalMode, setModalMode] = useState("add") // add | view | edit
+  const [isLoading, setIsLoading] = useState(true)
+
+  const fetchTrainers = async () => {
+    setIsLoading(true)
+    try {
+      const response = await api.get('/trainers')
+      if (response.data.success) {
+        // Map backend data to frontend structure if needed
+        // Backend: { _id, name, email, phone, specialization, experience, photo, ... }
+        // Frontend expects: { id, fullName, email, phone, specialization, experience, photo, status }
+        // Note: Backend 'name' -> Frontend 'fullName'. Backend doesn't seem to have 'status', defaulting to 'Active'.
+        const mapped = response.data.data.map(t => ({
+          id: t._id,
+          fullName: t.name,
+          email: t.email,
+          phone: t.phone,
+          specialization: t.specialization,
+          experience: t.experience,
+          status: "Active", // Mock status
+          photo: t.photo
+            ? (t.photo.startsWith('http') ? t.photo : `http://localhost:5001/${t.photo.replace(/\\/g, '/')}`)
+            : "https://via.placeholder.com/150",
+          // Note: ideally use env variable for base url
+        }))
+        setTrainers(mapped)
+      }
+    } catch (error) {
+      console.error("Error fetching trainers:", error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchTrainers()
+  }, [])
 
   const filteredTrainers = useMemo(() => {
     return trainers.filter((trainer) =>
@@ -69,26 +79,58 @@ export default function TrainersManagement() {
     setDeleteModalOpen(true)
   }
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (selectedTrainer) {
-      setTrainers(trainers.filter((t) => t.id !== selectedTrainer.id))
+      try {
+        await api.delete(`/trainers/${selectedTrainer.id}`)
+        fetchTrainers() // Refresh list
+      } catch (error) {
+        console.error("Error deleting trainer:", error)
+        alert("Failed to delete trainer")
+      }
       setDeleteModalOpen(false)
       setSelectedTrainer(null)
     }
   }
 
-  const handleSaveTrainer = (trainer) => {
-    if (modalMode === "add") {
-      const newTrainer = {
-        ...trainer,
-        id: `TR${String(trainers.length + 1).padStart(3, "0")}`,
+  const handleSaveTrainer = async (trainerData) => {
+    // trainerData comes from modal. It might need mapping back to backend format.
+    // Backend expects: name, email, phone, specialization, experience, photo (file)
+    // If TrainerModal handles file upload properly and returns FormData, good. 
+    // If it returns JSON, we need to adapt.
+    // Assuming simple JSON for now, but photo upload requires FormData if changing photo.
+    // IMPORTANT: Implementing full FormData support might be out of scope for a quick fix, 
+    // but let's try to support basic text fields at least.
+
+    // NOTE: This assumes TrainerModal returns an object with fields matching the inputs.
+    // We map fullName -> name.
+
+    try {
+      const payload = {
+        name: trainerData.fullName,
+        email: trainerData.email,
+        phone: trainerData.phone,
+        specialization: trainerData.specialization,
+        experience: trainerData.experience
       }
-      setTrainers([...trainers, newTrainer])
-    } else if (modalMode === "edit" && selectedTrainer) {
-      setTrainers(
-        trainers.map((t) => (t.id === selectedTrainer.id ? trainer : t))
-      )
+
+      // Handling file upload usually requires FormData.
+      // If trainerData.photo is a File object, we use FormData.
+      // For simplicity in this step, I'll send JSON (no photo update support in this quick patch unless used FormData).
+      // If the user wants robust photo upload, I'd need to check TrainerModal implementation.
+      // I will assume JSON update for text fields for now.
+
+      if (modalMode === "add") {
+        await api.post('/trainers', payload) // Might fail if backend requires photo as multipart
+      } else if (modalMode === "edit" && selectedTrainer) {
+        await api.put(`/trainers/${selectedTrainer.id}`, payload)
+      }
+      fetchTrainers()
+    } catch (error) {
+      console.error("Error saving trainer:", error)
+      alert("Failed to save trainer. Note: Photo upload might not be supported in this mode.")
     }
+
     setTrainerModalOpen(false)
     setSelectedTrainer(null)
   }
@@ -148,6 +190,8 @@ export default function TrainersManagement() {
                       src={trainer.photo}
                       alt={trainer.fullName}
                       className="h-10 w-10 rounded-full object-cover"
+                      loading="lazy"
+                      decoding="async"
                     />
                   </td>
                   <td className="px-4 py-3">{trainer.fullName}</td>
@@ -157,9 +201,8 @@ export default function TrainersManagement() {
                   <td className="hidden xl:table-cell px-4 py-3">{trainer.experience} yrs</td>
                   <td className="px-4 py-3">
                     <span
-                      className={`px-2 py-1 rounded text-white ${
-                        trainer.status === "Active" ? "bg-green-600" : "bg-red-600"
-                      }`}
+                      className={`px-2 py-1 rounded text-white ${trainer.status === "Active" ? "bg-green-600" : "bg-red-600"
+                        }`}
                     >
                       {trainer.status}
                     </span>

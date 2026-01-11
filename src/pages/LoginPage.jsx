@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { IMAGE_PATHS } from "../common/ImageConstant";
-// import api from "../api/api"; // Removed for mock implementation
+import api from "../api/api";
 
 export function LoginForm() {
   const navigate = useNavigate();
@@ -11,13 +11,6 @@ export function LoginForm() {
     rememberMe: false,
   });
 
-  /* const [errors, setErrors] = useState({
-    email: "",
-    password: "",
-    root: "",
-  }); */
-
-  // Simplified error state for mock demo
   const [errors, setErrors] = useState({
     email: "",
     password: "",
@@ -52,27 +45,34 @@ export function LoginForm() {
     if (validateForm()) {
       setIsLoading(true);
 
-      // MOCK LOGIN LOGIC
       try {
-        // Simulate network delay
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        const response = await api.post("/users/login", {
+          email: formData.email,
+          password: formData.password
+        });
 
-        // Mock success with dynamic role based on email
-        const mockToken = "mock-jwt-token-12345";
-        localStorage.setItem("token", mockToken);
+        const { token, user } = response.data;
 
-        // Check if email indicates an admin (simple check for demo)
-        if (formData.email.toLowerCase().includes("admin")) {
-          localStorage.setItem("role", "Admin");
+        localStorage.setItem("token", token);
+
+        // Use the role from the response, or derived from user data
+        // Ideally the backend returns the role, currently we set it in the controller roughly
+        localStorage.setItem("role", role);
+        localStorage.setItem("username", user.username);
+        localStorage.setItem("email", user.email);
+        localStorage.setItem("userId", user.id);
+
+        if (role === "Admin") {
           navigate("/admin/dashboard");
         } else {
-          localStorage.setItem("role", "Customer");
-          navigate("/customer/membership");
+          // navigate("/customer/membership");
+          navigate("/customer/profile");
         }
 
       } catch (error) {
-        console.error("Mock login error:", error);
-        setErrors(prev => ({ ...prev, root: "Something went wrong" }));
+        console.error("Login error:", error);
+        const errorMsg = error.response?.data?.message || "Something went wrong. Please try again.";
+        setErrors(prev => ({ ...prev, root: errorMsg }));
       } finally {
         setIsLoading(false);
       }

@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Share2,
   Pencil,
@@ -8,10 +8,89 @@ import {
   Heart,
   Bell,
   LogOut,
+  Save,
+  X
 } from "lucide-react"
+import { useNavigate } from "react-router-dom"
+import api from "../api/api"
 
 export default function Profile() {
   const [profileImage, setProfileImage] = useState("/placeholder.svg")
+  const [userInfo, setUserInfo] = useState({ username: "", email: "" })
+  const [membership, setMembership] = useState(null)
+
+  // Edit State
+  const [isEditing, setIsEditing] = useState(false)
+  const [editForm, setEditForm] = useState({ username: "", email: "" })
+
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    const username = localStorage.getItem("username")
+    const email = localStorage.getItem("email")
+    setUserInfo({ username: username || "Customer", email: email || "user@example.com" })
+    setEditForm({ username: username || "", email: email || "" })
+
+    if (username) {
+      fetchMembership(username)
+    }
+  }, [])
+
+  const fetchMembership = async (username) => {
+    try {
+      const response = await api.get(`/payments?name=${username}`)
+      if (response.data.success && response.data.data.length > 0) {
+        setMembership(response.data.data[0])
+      }
+    } catch (error) {
+      console.error("Error fetching membership:", error)
+    }
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem("token")
+    localStorage.removeItem("role")
+    localStorage.removeItem("username")
+    localStorage.removeItem("email")
+    localStorage.removeItem("userId")
+    navigate("/")
+  }
+
+  const handleEditToggle = () => {
+    setIsEditing(!isEditing)
+    if (!isEditing) {
+      setEditForm(userInfo) // Reset form to current info when opening
+    }
+  }
+
+  const handleSaveProfile = async () => {
+    try {
+      const userId = localStorage.getItem("userId");
+      if (!userId) {
+        alert("User ID missing. Please login again.");
+        return;
+      }
+
+      const response = await api.put(`/users/${userId}`, editForm);
+
+      if (response.status === 200) {
+        const updatedUser = response.data.user;
+
+        // Update local state
+        setUserInfo({ username: updatedUser.username, email: updatedUser.email });
+        setIsEditing(false);
+
+        // Update localStorage
+        localStorage.setItem("username", updatedUser.username);
+        localStorage.setItem("email", updatedUser.email);
+
+        alert("Profile updated successfully!");
+      }
+    } catch (error) {
+      console.error("Update failed", error);
+      alert("Failed to update profile.");
+    }
+  }
 
   return (
     <div className="min-h-screen bg-white p-4 md:p-8 mt-8">
@@ -31,9 +110,9 @@ export default function Profile() {
               </div>
             </div>
             <div className="space-y-1">
-              <h1 className="text-2xl font-bold text-gray-900">Customer</h1>
-              <p className="text-sm text-gray-500">customer@gmail.com</p>
-              <p className="text-sm font-medium text-gray-900">Basic Member</p>
+              <h1 className="text-2xl font-bold text-gray-900 capitalize">{userInfo.username}</h1>
+              <p className="text-sm text-gray-500">{userInfo.email}</p>
+              <p className="text-sm font-medium text-gray-900">{membership ? membership.subscription : "No Active Plan"}</p>
             </div>
           </div>
           <div className="flex gap-3">
@@ -41,9 +120,10 @@ export default function Profile() {
               <Share2 className="h-4 w-4" />
               Share Profile
             </button>
-            <button className="bg-[#2563eb] hover:bg-[#1d4ed8] text-white px-4 py-2 flex items-center gap-2 rounded-lg">
-              <Pencil className="h-4 w-4" />
-              Edit Profile
+            <button
+              onClick={handleEditToggle}
+              className={`px-4 py-2 flex items-center gap-2 rounded-lg text-white ${isEditing ? "bg-red-500 hover:bg-red-600" : "bg-[#2563eb] hover:bg-[#1d4ed8]"}`}>
+              {isEditing ? <><X className="h-4 w-4" /> Cancel Edit</> : <><Pencil className="h-4 w-4" /> Edit Profile</>}
             </button>
           </div>
         </div>
@@ -53,9 +133,19 @@ export default function Profile() {
 
           {/* Personal Information */}
           <div className="bg-white rounded-xl shadow-sm p-6 space-y-6">
-            <div className="flex items-center gap-2 text-gray-900">
-              <User className="h-5 w-5" />
-              <h2 className="text-xl font-semibold">Personal Information</h2>
+            <div className="flex items-center justify-between text-gray-900">
+              <div className="flex items-center gap-2">
+                <User className="h-5 w-5" />
+                <h2 className="text-xl font-semibold">Personal Information</h2>
+              </div>
+              {isEditing && (
+                <button
+                  onClick={handleSaveProfile}
+                  className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-sm"
+                >
+                  <Save className="h-4 w-4" /> Save Changes
+                </button>
+              )}
             </div>
 
             <div className="flex items-start gap-6">
@@ -81,9 +171,10 @@ export default function Profile() {
                 <label className="text-gray-900 font-medium">Username</label>
                 <input
                   type="text"
-                  value="Customer"
-                  disabled
-                  className="w-full bg-gray-300 border-0 rounded-md p-2 cursor-not-allowed"
+                  value={isEditing ? editForm.username : userInfo.username}
+                  onChange={(e) => setEditForm({ ...editForm, username: e.target.value })}
+                  disabled={!isEditing}
+                  className={`w-full border rounded-md p-2 capitalize ${isEditing ? "bg-white border-blue-500 ring-2 ring-blue-100" : "bg-gray-100 border-gray-200 cursor-not-allowed"}`}
                 />
               </div>
 
@@ -91,18 +182,21 @@ export default function Profile() {
                 <label className="text-gray-900 font-medium">Email</label>
                 <input
                   type="email"
-                  value="customer@gmail.com"
-                  disabled
-                  className="w-full bg-gray-300 border-0 rounded-md p-2 cursor-not-allowed"
+                  value={isEditing ? editForm.email : userInfo.email}
+                  onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                  disabled={!isEditing}
+                  className={`w-full border rounded-md p-2 ${isEditing ? "bg-white border-blue-500 ring-2 ring-blue-100" : "bg-gray-100 border-gray-200 cursor-not-allowed"}`}
                 />
               </div>
             </div>
 
-            <div className="bg-gray-100 p-4 rounded-md">
-              <p className="text-sm text-gray-900 leading-relaxed">
-                Personal information can only be changed after clicking the Edit button on the top-right corner of the screen.
-              </p>
-            </div>
+            {!isEditing && (
+              <div className="bg-gray-100 p-4 rounded-md">
+                <p className="text-sm text-gray-900 leading-relaxed">
+                  Personal information can only be changed after clicking the Edit button on the top-right corner of the screen.
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Right Sidebar */}
@@ -113,23 +207,32 @@ export default function Profile() {
               <h2 className="text-xl font-semibold text-gray-900">Membership Info</h2>
               <div>
                 <p className="text-sm text-gray-500 mb-1">Plan Type</p>
-                <p className="text-base font-bold text-gray-900">Basic Membership</p>
+                <p className="text-base font-bold text-gray-900">{membership ? membership.subscription : "Free Member"}</p>
               </div>
 
               <div>
                 <p className="text-sm text-gray-500 mb-1">Status</p>
                 <div className="flex items-center gap-1">
-                  <span className="h-2 w-2 rounded-full bg-green-500"></span>
-                  <p className="text-base font-semibold text-green-600">Active</p>
+                  <span className={`h-2 w-2 rounded-full ${membership ? "bg-green-500" : "bg-gray-400"}`}></span>
+                  <p className={`text-base font-semibold ${membership ? "text-green-600" : "text-gray-500"}`}>
+                    {membership ? "Active" : "Inactive"}
+                  </p>
                 </div>
               </div>
 
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Renewal Date</p>
-                <p className="text-base font-bold text-gray-900">Dec 9, 2025</p>
-              </div>
+              {membership && (
+                <div>
+                  <p className="text-sm text-gray-500 mb-1">Renewal Date</p>
+                  <p className="text-base font-bold text-gray-900">
+                    {new Date(new Date(membership.createdAt).setMonth(new Date(membership.createdAt).getMonth() + 1)).toLocaleDateString()}
+                  </p>
+                </div>
+              )}
 
-              <button className="w-full bg-[#2563eb] hover:bg-[#1d4ed8] text-white px-4 py-2 rounded-lg">
+
+              <button
+                onClick={() => navigate("/customer/membership")}
+                className="w-full bg-[#2563eb] hover:bg-[#1d4ed8] text-white px-4 py-2 rounded-lg">
                 Manage Plan
               </button>
             </div>
@@ -138,17 +241,31 @@ export default function Profile() {
             <div className="bg-white shadow-sm rounded-xl p-6 space-y-3">
               <h2 className="text-xl font-semibold text-gray-900">Quick Links</h2>
 
-              <button className="w-full flex items-center gap-3 h-12 bg-[#2563eb] hover:bg-[#1d4ed8] text-white px-4 rounded-lg">
+              <button
+                onClick={() => {
+                  const element = document.createElement("a");
+                  const file = new Blob(["User Report\n\nName: " + userInfo.username + "\nEmail: " + userInfo.email + "\nStatus: Active"], { type: 'text/plain' });
+                  element.href = URL.createObjectURL(file);
+                  element.download = "report.txt";
+                  document.body.appendChild(element); // Required for this to work in FireFox
+                  element.click();
+                  alert("Report downloaded!");
+                }}
+                className="w-full flex items-center gap-3 h-12 bg-[#2563eb] hover:bg-[#1d4ed8] text-white px-4 rounded-lg">
                 <Download className="h-5 w-5" />
                 Download Report
               </button>
 
-              <button className="w-full flex items-center gap-3 h-12 bg-[#2563eb] hover:bg-[#1d4ed8] text-white px-4 rounded-lg">
+              <button
+                onClick={() => alert("You have no favorite classes yet. Go to Classes to book one!")}
+                className="w-full flex items-center gap-3 h-12 bg-[#2563eb] hover:bg-[#1d4ed8] text-white px-4 rounded-lg">
                 <Heart className="h-5 w-5" />
                 Favorite Classes
               </button>
 
-              <button className="w-full flex items-center gap-3 h-12 bg-[#2563eb] hover:bg-[#1d4ed8] text-white px-4 rounded-lg">
+              <button
+                onClick={() => alert("No new notifications.")}
+                className="w-full flex items-center gap-3 h-12 bg-[#2563eb] hover:bg-[#1d4ed8] text-white px-4 rounded-lg">
                 <Bell className="h-5 w-5" />
                 Notifications
               </button>
@@ -158,7 +275,9 @@ export default function Profile() {
 
         {/* Logout Button */}
         <div className="flex justify-end">
-          <button className="bg-[#2563eb] hover:bg-[#1d4ed8] text-white flex items-center gap-2 px-8 py-2 rounded-lg">
+          <button
+            onClick={handleLogout}
+            className="bg-[#2563eb] hover:bg-[#1d4ed8] text-white flex items-center gap-2 px-8 py-2 rounded-lg">
             <LogOut className="h-4 w-4" />
             Logout
           </button>

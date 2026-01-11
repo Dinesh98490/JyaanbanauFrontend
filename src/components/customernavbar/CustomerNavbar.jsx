@@ -1,7 +1,17 @@
 import { Link } from "react-router-dom";
 import { IMAGE_PATHS } from "../../common/ImageConstant";
+import { useEffect, useState } from "react";
 
 export default function CustomerNavbar() {
+  const [username, setUsername] = useState("Customer");
+
+  useEffect(() => {
+    const storedName = localStorage.getItem("username");
+    if (storedName) {
+      setUsername(storedName);
+    }
+  }, []);
+
   return (
     <header className="sticky top-0 z-50 bg-white border-b shadow-sm font-Annapurna">
       <div className="relative w-full h-20 flex items-center px-8">
@@ -37,16 +47,16 @@ export default function CustomerNavbar() {
         </nav>
 
         {/* RIGHT: Customer Info */}
-        <div className="ml-auto flex items-center gap-3">
-          <span className="text-sm font-medium text-gray-700">
-            Hi, Customer
+        <Link to="/customer/profile" className="ml-auto flex items-center gap-3 hover:bg-gray-50 px-3 py-2 rounded-lg transition-colors">
+          <span className="text-sm font-medium text-gray-700 capitalize">
+            Hi, {username}
           </span>
           <img
             src={IMAGE_PATHS.avatar || "https://i.pravatar.cc/40"}
             alt="profile"
             className="w-10 h-10 rounded-full object-cover border"
           />
-        </div>
+        </Link>
       </div>
     </header>
   );

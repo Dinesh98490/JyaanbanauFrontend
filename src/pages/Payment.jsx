@@ -1,8 +1,52 @@
-import { useState } from "react"
-import { CreditCard, Eye, Plus } from "lucide-react"
+import { useState, useEffect } from "react"
+import { CreditCard, Eye, Plus, X } from "lucide-react"
+import api from "../api/api"
 
 export default function Payment() {
   const [showCardDetails, setShowCardDetails] = useState(false)
+  const [currentPlan, setCurrentPlan] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [showModal, setShowModal] = useState(false)
+  const [cardForm, setCardForm] = useState({
+    number: "",
+    holder: "",
+    expiry: "",
+    cvv: ""
+  })
+
+  useEffect(() => {
+    fetchPayment()
+  }, [])
+
+  const fetchPayment = async () => {
+    try {
+      const username = localStorage.getItem("username")
+      if (!username) {
+        setLoading(false)
+        return
+      }
+      const response = await api.get(`/payments?name=${username}`)
+      if (response.data.success && response.data.data.length > 0) {
+        // Assume the first one is the active latest subscription
+        setCurrentPlan(response.data.data[0])
+      }
+    } catch (error) {
+      console.error("Error fetching payment:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleAddMethod = (e) => {
+    e.preventDefault()
+    // Mock saving card
+    alert("Payment method added successfully!")
+    setShowModal(false)
+    // Reset form
+    setCardForm({ number: "", holder: "", expiry: "", cvv: "" })
+  }
+
+  if (loading) return <div className="p-8">Loading payments...</div>
 
   return (
     <div className="min-h-screen bg-white p-4 md:p-8 mt-8 ">
@@ -21,42 +65,71 @@ export default function Payment() {
         </div>
 
         {/* Current Plan */}
-        <div className="mb-8 bg-[#c5d4e8] p-8 rounded-xl shadow-lg">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            <div>
-              <p className="text-sm text-gray-700 mb-1">Current Plan</p>
-              <h2 className="text-3xl font-bold text-[#0046ff]">
-                Basic Membership
-              </h2>
+        {currentPlan ? (
+          <div className="mb-8 bg-[#c5d4e8] p-8 rounded-xl shadow-lg">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+              <div>
+                <p className="text-sm text-gray-700 mb-1">Current Plan</p>
+                <h2 className="text-3xl font-bold text-[#0046ff]">
+                  {currentPlan.subscription}
+                </h2>
+              </div>
+
+              <div>
+                <p className="text-sm text-gray-700 mb-1">Billing Amount</p>
+                <p className="text-4xl font-bold text-gray-900">Rs {currentPlan.price}</p>
+                <p className="text-sm text-gray-700">Monthly</p>
+              </div>
+
+              <div>
+                <p className="text-sm text-gray-700 mb-1">Next Billing Date</p>
+                <p className="text-4xl font-bold text-gray-900">
+                  {new Date(new Date(currentPlan.createdAt).setMonth(new Date(currentPlan.createdAt).getMonth() + 1)).toLocaleDateString()}
+                </p>
+                <p className="text-sm text-green-700">· Active</p>
+              </div>
             </div>
 
-            <div>
-              <p className="text-sm text-gray-700 mb-1">Billing Amount</p>
-              <p className="text-4xl font-bold text-gray-900">Rs 2999</p>
-              <p className="text-sm text-gray-700">Monthly</p>
-            </div>
-
-            <div>
-              <p className="text-sm text-gray-700 mb-1">Next Billing Date</p>
-              <p className="text-4xl font-bold text-gray-900">12/9/2025</p>
-              <p className="text-sm text-green-700">· Active</p>
+            <div className="flex gap-4">
+              <button
+                onClick={() => window.location.href = "/customer/membership"}
+                className="bg-[#0046ff] hover:bg-[#0039cc] text-white px-8 py-3 rounded-lg text-lg">
+                Upgrade Plan
+              </button>
+              <button
+                onClick={async () => {
+                  if (confirm("Are you sure you want to cancel?")) {
+                    try {
+                      const response = await api.delete(`/payments/${currentPlan._id}`);
+                      if (response.data.success) {
+                        alert("Membership cancelled successfully.");
+                        setCurrentPlan(null);
+                      }
+                    } catch (error) {
+                      console.error("Cancellation failed:", error);
+                      alert("Failed to cancel membership.");
+                    }
+                  }
+                }}
+                className="bg-[#0046ff] hover:bg-[#0039cc] text-white px-8 py-3 rounded-lg text-lg">
+                Cancel Membership
+              </button>
             </div>
           </div>
-
-          <div className="flex gap-4">
-            <button className="bg-[#0046ff] hover:bg-[#0039cc] text-white px-8 py-3 rounded-lg text-lg">
-              Upgrade Plan
-            </button>
-            <button className="bg-[#0046ff] hover:bg-[#0039cc] text-white px-8 py-3 rounded-lg text-lg">
-              Cancel Membership
-            </button>
+        ) : (
+          <div className="mb-8 bg-gray-100 p-8 rounded-xl text-center">
+            <p className="text-xl text-gray-600">No active subscription found.</p>
+            <a href="/customer/membership" className="text-blue-600 font-bold mt-2 inline-block">Browse Plans</a>
           </div>
-        </div>
+        )}
+
 
         {/* Payments Header */}
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-3xl font-bold text-gray-900">Payments</h2>
-          <button className="flex items-center gap-2 bg-[#0046ff] hover:bg-[#0039cc] text-white px-6 py-3 rounded-lg text-lg">
+          <h2 className="text-3xl font-bold text-gray-900">Payment Methods</h2>
+          <button
+            onClick={() => setShowModal(true)}
+            className="flex items-center gap-2 bg-[#0046ff] hover:bg-[#0039cc] text-white px-6 py-3 rounded-lg text-lg">
             <Plus className="w-5 h-5" />
             Add Method
           </button>
@@ -89,7 +162,7 @@ export default function Payment() {
               <div className="flex items-end justify-between">
                 <div>
                   <p className="text-sm text-white/80">Card Holder Name</p>
-                  <p className="text-lg font-semibold">Customer</p>
+                  <p className="text-lg font-semibold">{localStorage.getItem("username") || "Customer"}</p>
                 </div>
 
                 <div className="text-right">
@@ -139,10 +212,18 @@ export default function Payment() {
 
             {/* Action Buttons */}
             <div className="flex gap-4">
-              <button className="flex-1 bg-[#0046ff] hover:bg-[#0039cc] text-white py-4 rounded-xl text-lg">
+              <button
+                onClick={() => alert("Edit feature coming soon.")}
+                className="flex-1 bg-[#0046ff] hover:bg-[#0039cc] text-white py-4 rounded-xl text-lg">
                 Edit
               </button>
-              <button className="flex-1 bg-[#0046ff] hover:bg-[#0039cc] text-white py-4 rounded-xl text-lg">
+              <button
+                onClick={() => {
+                  if (confirm("Remove this payment method?")) {
+                    alert("Payment method removed.");
+                  }
+                }}
+                className="flex-1 bg-[#0046ff] hover:bg-[#0039cc] text-white py-4 rounded-xl text-lg">
                 Remove
               </button>
             </div>
@@ -150,6 +231,43 @@ export default function Payment() {
           </div>
         </div>
       </div>
+
+      {/* Add Method Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-8 rounded-lg max-w-md w-full relative">
+            <button
+              onClick={() => setShowModal(false)}
+              className="absolute top-4 right-4 text-gray-500 hover:text-black">
+              <X className="w-6 h-6" />
+            </button>
+            <h2 className="text-2xl font-bold mb-6">Add Payment Method</h2>
+            <form onSubmit={handleAddMethod} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Card Number</label>
+                <input type="text" placeholder="0000 0000 0000 0000" className="w-full border p-2 rounded" required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Card Holder</label>
+                <input type="text" placeholder="Name on card" className="w-full border p-2 rounded" required />
+              </div>
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Expiry</label>
+                  <input type="text" placeholder="MM/YY" className="w-full border p-2 rounded" required />
+                </div>
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">CVV</label>
+                  <input type="text" placeholder="123" className="w-full border p-2 rounded" required />
+                </div>
+              </div>
+              <button type="submit" className="w-full bg-[#0046ff] text-white py-3 rounded-lg font-bold hover:bg-[#0039cc] mt-4">
+                Save Method
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -1,14 +1,17 @@
-import React from "react"
+import React, { useEffect, useState } from "react"
 import { Element } from "react-scroll"
 import { Check } from "lucide-react"
+import api from "../api/api"
+import { useNavigate } from "react-router-dom"
 
 const bgColor = "bg-gray-50"
 
-// Pricing plans
-const plans = [
+// Fallback plans in case backend is empty or fails
+const fallbackPlans = [
   {
-    name: "Basic",
-    price: "2999",
+    _id: "basic",
+    subscriptionName: "Basic",
+    price: 2999,
     description: "Perfect for new gyms",
     features: [
       "Basic Members",
@@ -18,8 +21,9 @@ const plans = [
     ],
   },
   {
-    name: "Standard",
-    price: "4999",
+    _id: "standard",
+    subscriptionName: "Standard",
+    price: 4999,
     description: "Most popular",
     featured: true,
     features: [
@@ -31,8 +35,9 @@ const plans = [
     ],
   },
   {
-    name: "Premium",
-    price: "8999",
+    _id: "premium",
+    subscriptionName: "Premium",
+    price: 8999,
     description: "For large gyms",
     features: [
       "Unlimited Members",
@@ -45,6 +50,67 @@ const plans = [
 ]
 
 export default function Membership() {
+  const [plans, setPlans] = useState([])
+  const [loading, setLoading] = useState(true)
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        const response = await api.get("/subscriptions")
+        if (response.data.success && response.data.data.length > 0) {
+          // Map backend data to frontend structure if needed, or use as is
+          setPlans(response.data.data)
+        } else {
+          setPlans(fallbackPlans)
+        }
+      } catch (error) {
+        console.error("Error fetching plans:", error)
+        setPlans(fallbackPlans)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchPlans()
+  }, [])
+
+  const handleSubscribe = async (plan) => {
+    const token = localStorage.getItem("token")
+    if (!token) {
+      alert("Please login to subscribe")
+      navigate("/login")
+      return
+    }
+
+    const username = localStorage.getItem("username")
+    if (!username) {
+      alert("User information missing. Please login again.")
+      navigate("/login")
+      return
+    }
+
+    try {
+      if (confirm(`Are you sure you want to subscribe to ${plan.subscriptionName || plan.name}?`)) {
+        await api.post("/payments", {
+          name: username,
+          paymentMethod: "Credit Card", // Dummy default
+          subscription: plan.subscriptionName || plan.name,
+          price: plan.price
+        })
+        alert("Subscription successful!")
+        navigate("/customer/profile")
+      }
+    } catch (error) {
+      console.error("Subscription error:", error)
+      alert("Failed to subscribe. Please try again.")
+    }
+  }
+
+  if (loading) {
+    return <div className="text-center py-24">Loading plans...</div>
+  }
+
   return (
     <Element name="pricing">
       <section className={`${bgColor} py-16 md:py-24`}>
@@ -63,27 +129,29 @@ export default function Membership() {
           {/* Cards */}
           <div className="flex flex-col md:flex-row justify-center items-stretch gap-12">
             {plans.map((plan) => {
-              const isFeatured = plan.featured
+              // Check if plan is "Standard" to highlight it, or use a featured flag if you have one
+              const isFeatured = plan.subscriptionName === "Standard" || plan.featured === true
+
+              // Support both backend 'subscriptionName' and fallback 'name'
+              const planName = plan.subscriptionName || plan.name
 
               return (
                 <div
-                  key={plan.name}
-                  className={`flex-1 max-w-xs p-10 rounded-2xl shadow-lg transition-all duration-300 flex flex-col justify-between ${
-                    isFeatured
-                      ? "bg-[#0661F3] text-white scale-105 hover:scale-110"
-                      : "bg-white hover:shadow-xl"
-                  }`}
+                  key={plan._id || planName}
+                  className={`flex-1 max-w-xs p-10 rounded-2xl shadow-lg transition-all duration-300 flex flex-col justify-between ${isFeatured
+                    ? "bg-[#0661F3] text-white scale-105 hover:scale-110"
+                    : "bg-white hover:shadow-xl"
+                    }`}
                 >
                   {/* Content */}
                   <div>
                     <h3 className="text-2xl font-bold mb-3">
-                      {plan.name}
+                      {planName}
                     </h3>
 
-                    <p className={`mb-8 ${
-                      isFeatured ? "text-white/80" : "text-gray-500"
-                    }`}>
-                      {plan.description}
+                    <p className={`mb-8 ${isFeatured ? "text-white/80" : "text-gray-500"
+                      }`}>
+                      {plan.description || "Unlock your potential"}
                     </p>
 
                     {/* Price */}
@@ -91,9 +159,8 @@ export default function Membership() {
                       <span className="text-4xl font-extrabold">
                         Rs {plan.price}
                       </span>
-                      <span className={`${
-                        isFeatured ? "text-white/80" : "text-gray-500"
-                      }`}>
+                      <span className={`${isFeatured ? "text-white/80" : "text-gray-500"
+                        }`}>
                         /month
                       </span>
                     </div>
@@ -103,9 +170,8 @@ export default function Membership() {
                       {plan.features.map((feature) => (
                         <div key={feature} className="flex items-center gap-2">
                           <Check
-                            className={`w-4 h-4 ${
-                              isFeatured ? "text-white" : "text-blue-600"
-                            }`}
+                            className={`w-4 h-4 ${isFeatured ? "text-white" : "text-blue-600"
+                              }`}
                           />
                           <span>{feature}</span>
                         </div>
@@ -115,11 +181,11 @@ export default function Membership() {
 
                   {/* Button */}
                   <button
-                    className={`mt-8 w-full py-3 rounded-lg font-semibold transition ${
-                      isFeatured
-                        ? "bg-white text-[#0661F3] hover:bg-white/90"
-                        : "bg-[#0661F3] text-white hover:bg-blue-700"
-                    }`}
+                    onClick={() => handleSubscribe(plan)}
+                    className={`mt-8 w-full py-3 rounded-lg font-semibold transition ${isFeatured
+                      ? "bg-white text-[#0661F3] hover:bg-white/90"
+                      : "bg-[#0661F3] text-white hover:bg-blue-700"
+                      }`}
                   >
                     Start Free Trial
                   </button>
