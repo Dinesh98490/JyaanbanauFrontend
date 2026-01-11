@@ -1,28 +1,47 @@
 import { useState } from "react";
+import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { IMAGE_PATHS } from "../common/ImageConstant";
+import api from "../api/api";
 
 export function ForgetPasswordForm() {
   const [email, setEmail] = useState("");
-  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!email.trim()) {
-      setError("Email is required");
+      toast.error("Email is required");
       return;
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setError("Please enter a valid email");
+      toast.error("Please enter a valid email");
       return;
     }
 
-    setError("");
-    alert("Reset link sent to your email!");
-    
-    // Redirect to update password page
-    navigate("/updatepassword");
+    try {
+      setLoading(true);
+      // Call backend
+      const response = await api.post("/users/forgot-password", { email });
+
+      if (response.data.success || response.status === 200) {
+        if (response.data.mockData?.resetUrl) {
+          toast.info("DEV MODE: Auto-redirecting to Reset Page...");
+          // Wait a brief moment so user sees the toast, then redirect
+          setTimeout(() => {
+            window.location.href = response.data.mockData.resetUrl;
+          }, 1500);
+        } else {
+          toast.success(response.data.message || "Reset link sent!");
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error(err.response?.data?.message || "Something went wrong.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -42,17 +61,18 @@ export function ForgetPasswordForm() {
             value={email}
             placeholder="Enter your email"
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+            disabled={loading}
+            className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:outline-none focus:border-blue-500 transition-colors disabled:opacity-50"
           />
-          {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
         </div>
 
         {/* Button */}
         <button
           type="submit"
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-full transition-colors duration-200 text-lg"
+          disabled={loading}
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-full transition-colors duration-200 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Send Reset Link
+          {loading ? "Sending..." : "Send Reset Link"}
         </button>
       </form>
     </div>

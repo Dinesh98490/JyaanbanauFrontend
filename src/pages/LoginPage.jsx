@@ -52,6 +52,7 @@ export function LoginForm() {
         });
 
         const { token, user } = response.data;
+        const role = user.role || "Customer"; // Fallback if undefined
 
         localStorage.setItem("token", token);
 

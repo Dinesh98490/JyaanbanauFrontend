@@ -49,7 +49,9 @@ export default function Payment() {
   if (loading) return <div className="p-8">Loading payments...</div>
 
   return (
-    <div className="min-h-screen bg-white p-4 md:p-8 mt-8 ">
+
+      <div className="min-h-screen bg-[#EFF6FF] mt-8">
+
       <div className="mx-auto max-w-6xl">
 
         {/* Header */}

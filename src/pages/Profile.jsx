@@ -93,7 +93,9 @@ export default function Profile() {
   }
 
   return (
-    <div className="min-h-screen bg-white p-4 md:p-8 mt-8">
+    
+    <div className="min-h-screen bg-[#EFF6FF] mt-8">
+
       <div className="mx-auto max-w-7xl space-y-6">
 
         {/* Header */}

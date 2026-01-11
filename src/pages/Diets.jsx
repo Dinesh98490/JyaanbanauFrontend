@@ -107,8 +107,10 @@ export default function Diets() {
   if (isLoading) return <div className="text-center py-20">Loading...</div>;
   if (error) return <div className="text-center py-20 text-red-500">{error}</div>;
 
+  
   return (
-    <div className="min-h-screen bg-white mt-8">
+      <div className="min-h-screen bg-[#EFF6FF] mt-8">
+
       <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
 
         {/* Header */}

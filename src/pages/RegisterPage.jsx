@@ -166,16 +166,7 @@ export function RegisterForm() {
           </div>
         )}
 
-        {/* Submit Button */}
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-full transition-colors duration-200 text-lg disabled:opacity-50"
-        >
-          {isLoading ? "Registering..." : "Register"}
-        </button>
-
-        <div className="flex items-center gap-3 pt-2">
+<div className="flex items-center gap-3 pt-2">
           <input
             type="checkbox"
             name="acceptTerms"
@@ -187,6 +178,32 @@ export function RegisterForm() {
             Accept all the Terms and Conditions.
           </label>
         </div>
+
+
+        {/* Submit Button */}
+        <button
+          type="submit"
+          disabled={isLoading}
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-full transition-colors duration-200 text-lg disabled:opacity-50"
+        >
+          {isLoading ? "Registering..." : "Register"}
+        </button>
+
+
+
+
+        {/* <div className="flex items-center gap-3 pt-2">
+          <input
+            type="checkbox"
+            name="acceptTerms"
+            checked={formData.acceptTerms}
+            onChange={handleChange}
+            className="w-5 h-5 border-2 border-gray-400 rounded cursor-pointer"
+          />
+          <label className="text-sm text-gray-700 cursor-pointer">
+            Accept all the Terms and Conditions.
+          </label>
+        </div> */}
 
 
 

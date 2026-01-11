@@ -6,48 +6,6 @@ import { useNavigate } from "react-router-dom"
 
 const bgColor = "bg-gray-50"
 
-// Fallback plans in case backend is empty or fails
-const fallbackPlans = [
-  {
-    _id: "basic",
-    subscriptionName: "Basic",
-    price: 2999,
-    description: "Perfect for new gyms",
-    features: [
-      "Basic Members",
-      "No Trainer Plan",
-      "Limited Access",
-      "No Payment Plan",
-    ],
-  },
-  {
-    _id: "standard",
-    subscriptionName: "Standard",
-    price: 4999,
-    description: "Most popular",
-    featured: true,
-    features: [
-      "Up to 200 Members",
-      "Trainer Management",
-      "Class Scheduling",
-      "Payment Support",
-      "Priority Support",
-    ],
-  },
-  {
-    _id: "premium",
-    subscriptionName: "Premium",
-    price: 8999,
-    description: "For large gyms",
-    features: [
-      "Unlimited Members",
-      "Full Trainer",
-      "Custom Management",
-      "Advanced Analytics",
-      "Premium Support",
-    ],
-  },
-]
 
 export default function Membership() {
   const [plans, setPlans] = useState([])
@@ -111,9 +69,13 @@ export default function Membership() {
     return <div className="text-center py-24">Loading plans...</div>
   }
 
+
+
+
   return (
     <Element name="pricing">
-      <section className={`${bgColor} py-16 md:py-24`}>
+      {/* <section className={`${bgColor} py-16 md:py-24`}> */}
+      <section className="bg-[#EFF6FF] py-16 md:py-24">
         <div className="max-w-7xl mx-auto px-4">
 
           {/* Header */}
@@ -187,7 +149,7 @@ export default function Membership() {
                       : "bg-[#0661F3] text-white hover:bg-blue-700"
                       }`}
                   >
-                    Start Free Trial
+                    Join Now
                   </button>
                 </div>
               )
