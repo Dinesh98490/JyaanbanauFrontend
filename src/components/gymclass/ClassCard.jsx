@@ -5,9 +5,9 @@ export default function ClassCard({ gymClass, onView, onEdit, onDelete }) {
     <div className="group bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-200 hover:border-blue-500/50">
       {/* Trainer Photo Section */}
       <div className="relative h-48 bg-gradient-to-br from-blue-100 to-blue-50 overflow-hidden">
-        {gymClass.previewUrl ? (
+        {gymClass.image || gymClass.previewUrl ? (
           <img
-            src={gymClass.previewUrl || "/placeholder.svg"}
+            src={gymClass.image || gymClass.previewUrl || "/placeholder.svg"}
             alt={gymClass.trainerName}
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
           />
@@ -20,13 +20,12 @@ export default function ClassCard({ gymClass, onView, onEdit, onDelete }) {
         {/* Level Badge */}
         <div className="absolute top-3 right-3">
           <span
-            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-sm ${
-              gymClass.level === "Beginner"
-                ? "bg-green-500/90 text-white"
-                : gymClass.level === "Intermediate"
+            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-sm ${gymClass.level === "Beginner"
+              ? "bg-green-500/90 text-white"
+              : gymClass.level === "Intermediate"
                 ? "bg-amber-500/90 text-white"
                 : "bg-red-500/90 text-white"
-            }`}
+              }`}
           >
             {gymClass.level}
           </span>
@@ -69,7 +68,7 @@ export default function ClassCard({ gymClass, onView, onEdit, onDelete }) {
           </button>
 
           <button
-            onClick={() => onDelete(gymClass.id)}
+            onClick={() => onDelete(gymClass._id || gymClass.id)}
             className="flex-1 flex items-center justify-center border border-red-200 hover:bg-red-50 rounded-lg transition-colors py-2"
           >
             <Trash2 className="w-4 h-4 text-red-600 mr-2" />

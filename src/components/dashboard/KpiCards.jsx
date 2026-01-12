@@ -35,7 +35,42 @@ const kpiData = [
   },
 ]
 
-export default function KpiCards() {
+export default function KpiCards({ stats }) {
+  const kpiData = [
+    {
+      icon: Users,
+      label: "Total Members",
+      value: stats?.membersCount || 0,
+      change: "+12.5%", // Placeholder for growth
+      positive: true,
+      color: "from-blue-500 to-blue-600",
+    },
+    {
+      icon: Users,
+      label: "Active Members",
+      value: stats?.activeMembersCount || 0,
+      change: "+8.2%", // Placeholder
+      positive: true,
+      color: "from-gym-primary to-gym-primary/70",
+    },
+    {
+      icon: DollarSign,
+      label: "Monthly Revenue",
+      value: `$${stats?.totalRevenue || 0}`,
+      change: "+23.1%", // Placeholder
+      positive: true,
+      color: "from-green-500 to-green-600",
+    },
+    {
+      icon: Dumbbell,
+      label: "Total Trainers",
+      value: stats?.trainersCount || 0,
+      change: "+2 this month",
+      positive: true,
+      color: "from-orange-500 to-orange-600",
+    },
+  ]
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       {kpiData.map((kpi) => {
@@ -55,9 +90,8 @@ export default function KpiCards() {
                   {kpi.value}
                 </h3>
                 <p
-                  className={`text-sm font-semibold ${
-                    kpi.positive ? "text-green-600" : "text-red-600"
-                  }`}
+                  className={`text-sm font-semibold ${kpi.positive ? "text-green-600" : "text-red-600"
+                    }`}
                 >
                   {kpi.change}
                 </p>

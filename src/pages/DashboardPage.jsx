@@ -5,11 +5,33 @@ import AttendanceChart from "../components/dashboard/AttendenceChart"
 import RecentActivities from "../components/dashboard/RecentActivities"
 import TopClasses from "../components/dashboard/TopClasses"
 
+import { useEffect, useState } from "react"
+import api from "../api/api"
+
 export default function DashboardPage() {
+  const [stats, setStats] = useState({
+    membersCount: 0,
+    activeMembersCount: 0,
+    trainersCount: 0,
+    totalRevenue: 0
+  })
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await api.get("/admin/stats")
+        setStats(response.data)
+      } catch (error) {
+        console.error("Error fetching admin stats:", error)
+      }
+    }
+    fetchStats()
+  }, [])
+
   return (
     <div className="max-w-7xl mx-auto">
       {/* KPI Cards */}
-      <KpiCards />
+      <KpiCards stats={stats} />
 
       {/* Revenue & Members Analytics */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">

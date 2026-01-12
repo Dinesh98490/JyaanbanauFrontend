@@ -11,7 +11,8 @@ export default function Payment() {
     number: "",
     holder: "",
     expiry: "",
-    cvv: ""
+    cvv: "",
+    paymentMethod: "Credit Card"
   })
 
   useEffect(() => {
@@ -37,20 +38,58 @@ export default function Payment() {
     }
   }
 
-  const handleAddMethod = (e) => {
+  const handleAddMethod = async (e) => {
     e.preventDefault()
-    // Mock saving card
-    alert("Payment method added successfully!")
-    setShowModal(false)
-    // Reset form
-    setCardForm({ number: "", holder: "", expiry: "", cvv: "" })
+
+    if (cardForm.paymentMethod === "eSewa") {
+      // Handle eSewa payment
+      try {
+        const username = localStorage.getItem("username")
+        const response = await api.post("/esewa/initiate", {
+          amount: currentPlan?.price || 1000, // Use current plan price or default
+          productName: currentPlan?.subscription || "Gym Membership",
+          userName: username,
+        })
+
+        if (response.data.success) {
+          const paymentData = response.data.data
+
+          // Create a form and submit to eSewa
+          const form = document.createElement("form")
+          form.method = "POST"
+          form.action = paymentData.payment_url
+
+          // Add all payment fields as hidden inputs
+          Object.keys(paymentData).forEach((key) => {
+            if (key !== "payment_url") {
+              const input = document.createElement("input")
+              input.type = "hidden"
+              input.name = key
+              input.value = paymentData[key]
+              form.appendChild(input)
+            }
+          })
+
+          document.body.appendChild(form)
+          form.submit()
+        }
+      } catch (error) {
+        console.error("eSewa payment error:", error)
+        alert("Failed to initiate eSewa payment. Please try again.")
+      }
+    } else {
+      // Mock saving credit card
+      alert("Payment method added successfully!")
+      setShowModal(false)
+      setCardForm({ number: "", holder: "", expiry: "", cvv: "", paymentMethod: "Credit Card" })
+    }
   }
 
   if (loading) return <div className="p-8">Loading payments...</div>
 
   return (
 
-      <div className="min-h-screen bg-[#EFF6FF] mt-8">
+    <div className="min-h-screen bg-[#EFF6FF] mt-8">
 
       <div className="mx-auto max-w-6xl">
 
@@ -245,24 +284,69 @@ export default function Payment() {
             </button>
             <h2 className="text-2xl font-bold mb-6">Add Payment Method</h2>
             <form onSubmit={handleAddMethod} className="space-y-4">
+              {/* Payment Method Selector */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Card Number</label>
-                <input type="text" placeholder="0000 0000 0000 0000" className="w-full border p-2 rounded" required />
+                <label className="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
+                <select
+                  value={cardForm.paymentMethod || "Credit Card"}
+                  onChange={(e) => setCardForm({ ...cardForm, paymentMethod: e.target.value })}
+                  className="w-full border p-2 rounded"
+                  required
+                >
+                  <option value="Credit Card">Credit Card</option>
+                  <option value="eSewa">eSewa</option>
+                </select>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Card Holder</label>
-                <input type="text" placeholder="Name on card" className="w-full border p-2 rounded" required />
-              </div>
-              <div className="flex gap-4">
-                <div className="flex-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Expiry</label>
-                  <input type="text" placeholder="MM/YY" className="w-full border p-2 rounded" required />
-                </div>
-                <div className="flex-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">CVV</label>
-                  <input type="text" placeholder="123" className="w-full border p-2 rounded" required />
-                </div>
-              </div>
+
+              {/* Conditional Fields based on Payment Method */}
+              {(!cardForm.paymentMethod || cardForm.paymentMethod === "Credit Card") ? (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Card Number</label>
+                    <input type="text" placeholder="0000 0000 0000 0000" className="w-full border p-2 rounded" required />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Card Holder</label>
+                    <input type="text" placeholder="Name on card" className="w-full border p-2 rounded" required />
+                  </div>
+                  <div className="flex gap-4">
+                    <div className="flex-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Expiry</label>
+                      <input type="text" placeholder="MM/YY" className="w-full border p-2 rounded" required />
+                    </div>
+                    <div className="flex-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">CVV</label>
+                      <input type="text" placeholder="123" className="w-full border p-2 rounded" required />
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  {/* eSewa Fields */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">eSewa ID</label>
+                    <input
+                      type="text"
+                      placeholder="Enter your eSewa ID"
+                      className="w-full border p-2 rounded"
+                      required
+                    />
+                  </div>
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <div className="flex items-start gap-2">
+                      <svg className="w-5 h-5 text-green-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                      </svg>
+                      <div>
+                        <p className="text-sm font-medium text-green-800">eSewa Payment</p>
+                        <p className="text-xs text-green-700 mt-1">
+                          You will be redirected to eSewa to complete the payment securely.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
               <button type="submit" className="w-full bg-[#0046ff] text-white py-3 rounded-lg font-bold hover:bg-[#0039cc] mt-4">
                 Save Method
               </button>

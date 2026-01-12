@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { X, Check, AlertCircle, ImageIcon } from "lucide-react";
 import { IMAGE_PATHS } from "../../common/ImageConstant";
 export default function ClassFormModal({
@@ -12,15 +12,43 @@ export default function ClassFormModal({
   const [formState, setFormState] = useState(
     initialData
       ? {
-          className: initialData.className,
-          description: initialData.description,
-          trainerName: initialData.trainerName,
-          totalMembers: initialData.totalMembers,
-          level: initialData.level,
-          trainerPhoto: null,
-          previewUrl: initialData.previewUrl,
-        }
+        className: initialData.className,
+        description: initialData.description,
+        trainerName: initialData.trainerName,
+        totalMembers: initialData.totalMembers,
+        level: initialData.level,
+        trainerPhoto: null,
+        previewUrl: initialData.image || initialData.previewUrl,
+      }
       : {
+        className: "",
+        description: "",
+        trainerName: "",
+        totalMembers: 0,
+        level: "",
+        trainerPhoto: null,
+        previewUrl: null,
+      }
+  );
+  const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
+
+  // Reset form when modal opens or initialData changes
+  useEffect(() => {
+    if (isOpen) {
+      if (initialData) {
+        setFormState({
+          className: initialData.className || initialData.name || "", // Handle both naming conventions just in case
+          description: initialData.description || "",
+          trainerName: initialData.trainerName || "",
+          totalMembers: initialData.totalMembers || 0,
+          level: initialData.level || "",
+          trainerPhoto: null,
+          previewUrl: initialData.image || initialData.previewUrl || null,
+        });
+      } else {
+        // Reset for Add mode
+        setFormState({
           className: "",
           description: "",
           trainerName: "",
@@ -28,10 +56,14 @@ export default function ClassFormModal({
           level: "",
           trainerPhoto: null,
           previewUrl: null,
-        }
-  );
-  const [errors, setErrors] = useState({});
-  const [touched, setTouched] = useState({});
+        });
+      }
+      setErrors({});
+      setTouched({});
+      // Clear file input if ref exists
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }, [isOpen, initialData]);
 
   const validateField = (name, value) => {
     switch (name) {
@@ -179,20 +211,18 @@ export default function ClassFormModal({
                 value={formState.className}
                 onChange={handleInputChange}
                 onBlur={handleBlur}
-                className={`w-full h-10 border rounded px-3 mt-1 ${
-                  touched.className && errors.className
-                    ? "border-red-500 bg-red-50"
-                    : touched.className && !errors.className
+                className={`w-full h-10 border rounded px-3 mt-1 ${touched.className && errors.className
+                  ? "border-red-500 bg-red-50"
+                  : touched.className && !errors.className
                     ? "border-green-500 bg-green-50"
                     : "border-gray-300"
-                }`}
+                  }`}
                 placeholder="e.g., Advanced Yoga"
               />
               {touched.className && (
                 <p
-                  className={`text-xs mt-1 ${
-                    errors.className ? "text-red-500" : "text-green-600"
-                  }`}
+                  className={`text-xs mt-1 ${errors.className ? "text-red-500" : "text-green-600"
+                    }`}
                 >
                   {errors.className || "Looks good!"}
                 </p>
@@ -210,20 +240,18 @@ export default function ClassFormModal({
                 onChange={handleInputChange}
                 onBlur={handleBlur}
                 rows="4"
-                className={`w-full border rounded px-3 py-2 mt-1 resize-none ${
-                  touched.description && errors.description
-                    ? "border-red-500 bg-red-50"
-                    : touched.description && !errors.description
+                className={`w-full border rounded px-3 py-2 mt-1 resize-none ${touched.description && errors.description
+                  ? "border-red-500 bg-red-50"
+                  : touched.description && !errors.description
                     ? "border-green-500 bg-green-50"
                     : "border-gray-300"
-                }`}
+                  }`}
                 placeholder="Describe the class..."
               />
               {touched.description && (
                 <p
-                  className={`text-xs mt-1 ${
-                    errors.description ? "text-red-500" : "text-green-600"
-                  }`}
+                  className={`text-xs mt-1 ${errors.description ? "text-red-500" : "text-green-600"
+                    }`}
                 >
                   {errors.description || "Looks good!"}
                 </p>
@@ -242,20 +270,18 @@ export default function ClassFormModal({
                   value={formState.trainerName}
                   onChange={handleInputChange}
                   onBlur={handleBlur}
-                  className={`w-full h-10 border rounded px-3 mt-1 ${
-                    touched.trainerName && errors.trainerName
-                      ? "border-red-500 bg-red-50"
-                      : touched.trainerName && !errors.trainerName
+                  className={`w-full h-10 border rounded px-3 mt-1 ${touched.trainerName && errors.trainerName
+                    ? "border-red-500 bg-red-50"
+                    : touched.trainerName && !errors.trainerName
                       ? "border-green-500 bg-green-50"
                       : "border-gray-300"
-                  }`}
+                    }`}
                   placeholder="e.g., John Smith"
                 />
                 {touched.trainerName && (
                   <p
-                    className={`text-xs mt-1 ${
-                      errors.trainerName ? "text-red-500" : "text-green-600"
-                    }`}
+                    className={`text-xs mt-1 ${errors.trainerName ? "text-red-500" : "text-green-600"
+                      }`}
                   >
                     {errors.trainerName || "Looks good!"}
                   </p>
@@ -270,13 +296,12 @@ export default function ClassFormModal({
                   name="level"
                   value={formState.level}
                   onChange={(e) => handleSelectChange(e.target.value)}
-                  className={`w-full h-10 border rounded px-3 mt-1 ${
-                    touched.level && errors.level
-                      ? "border-red-500 bg-red-50"
-                      : touched.level && !errors.level
+                  className={`w-full h-10 border rounded px-3 mt-1 ${touched.level && errors.level
+                    ? "border-red-500 bg-red-50"
+                    : touched.level && !errors.level
                       ? "border-green-500 bg-green-50"
                       : "border-gray-300"
-                  }`}
+                    }`}
                 >
                   <option value="">Select level</option>
                   <option value="Beginner">Beginner</option>
@@ -285,9 +310,8 @@ export default function ClassFormModal({
                 </select>
                 {touched.level && (
                   <p
-                    className={`text-xs mt-1 ${
-                      errors.level ? "text-red-500" : "text-green-600"
-                    }`}
+                    className={`text-xs mt-1 ${errors.level ? "text-red-500" : "text-green-600"
+                      }`}
                   >
                     {errors.level || "Looks good!"}
                   </p>
@@ -322,7 +346,7 @@ export default function ClassFormModal({
                 <div className="space-y-2">
                   <div className="relative w-full h-48 border rounded overflow-hidden">
                     <img
-                      src={IMAGE_PATHS.landingimage}
+                      src={formState.previewUrl}
                       alt="jyaanbanau"
                       className="w-full h-full object-cover"
                     />
@@ -365,8 +389,8 @@ export default function ClassFormModal({
                 {isSubmitting
                   ? "Submitting..."
                   : initialData
-                  ? "Update Class"
-                  : "Create Class"}
+                    ? "Update Class"
+                    : "Create Class"}
               </button>
               <button
                 type="button"

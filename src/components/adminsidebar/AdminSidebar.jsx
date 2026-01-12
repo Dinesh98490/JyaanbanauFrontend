@@ -1,5 +1,5 @@
 import React from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { IMAGE_PATHS } from "../../common/ImageConstant";
 import {
   LayoutDashboard,
@@ -25,11 +25,21 @@ const menuItems = [
 ];
 
 export default function AdminSidebar({ isOpen }) {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    // Clear auth data
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    localStorage.removeItem("role");
+    // Redirect to home or login
+    navigate("/");
+  };
+
   return (
     <aside
-      className={`${
-        isOpen ? "w-72" : "w-24"
-      } bg-white border-r border-gray-200 transition-all duration-300 flex flex-col`}
+      className={`${isOpen ? "w-72" : "w-24"
+        } bg-white border-r border-gray-200 transition-all duration-300 flex flex-col`}
     >
       {/* Logo */}
       <div className="p-6 border-b border-gray-200 flex items-center gap-4">
@@ -52,10 +62,9 @@ export default function AdminSidebar({ isOpen }) {
             key={item.label}
             to={item.route}
             className={({ isActive }) =>
-              `flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${
-                isActive
-                  ? "bg-orange-100 text-orange-700 font-semibold"
-                  : "text-gray-700 hover:bg-gray-100"
+              `flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${isActive
+                ? "bg-orange-100 text-orange-700 font-semibold"
+                : "text-gray-700 hover:bg-gray-100"
               }`
             }
           >
@@ -71,13 +80,13 @@ export default function AdminSidebar({ isOpen }) {
 
       {/* Logout */}
       <div className="p-4 border-t border-gray-200">
-        <NavLink
-          to="/"
-          className="flex items-center gap-4 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 transition"
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center gap-4 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 transition"
         >
           <LogOut size={22} />
           {isOpen && <span className="text-base font-medium">Logout</span>}
-        </NavLink>
+        </button>
       </div>
     </aside>
   );

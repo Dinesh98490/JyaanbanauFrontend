@@ -1,4 +1,5 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
+import api from "../api/api"
 import { ChevronDown, ChevronUp, Save, RotateCcw, Upload } from "lucide-react"
 
 const defaultSettings = {
@@ -10,10 +11,10 @@ const defaultSettings = {
     logo: "",
   },
   admin: {
-    name: "Admin User",
-    username: "admin",
-    email: "admin@jyaanbanau.com",
-    password: "",
+    id: "",
+    username: "",
+    email: "",
+    password: "", // Only for update
   },
   notifications: {
     emailNotifications: true,
@@ -36,6 +37,34 @@ export default function Setting() {
   })
   const [logoPreview, setLogoPreview] = useState("")
   const [saveMessage, setSaveMessage] = useState("")
+
+  useEffect(() => {
+    // Fetch current user (admin) details
+    const fetchAdminProfile = async () => {
+      try {
+        // Assuming we have an endpoint to get "me" or reusing get user by id.
+        // Since we don't have '/me', we rely on localStorage 'user' to get ID or email, 
+        // OR we can misuse the token to find user. 
+        // Let's assume we stored user info in localStorage on login.
+        const storedUser = localStorage.getItem("user");
+        if (storedUser) {
+          const userData = JSON.parse(storedUser);
+          setSettings(prev => ({
+            ...prev,
+            admin: {
+              ...prev.admin,
+              id: userData.id,
+              username: userData.username,
+              email: userData.email
+            }
+          }))
+        }
+      } catch (e) {
+        console.error("Failed to load profile", e)
+      }
+    }
+    fetchAdminProfile()
+  }, [])
 
   const toggleSection = (section) => {
     setExpandedSections((prev) => ({
@@ -64,9 +93,33 @@ export default function Setting() {
     }
   }
 
-  const handleSaveChanges = () => {
-    setSaveMessage("Settings saved successfully!")
-    setTimeout(() => setSaveMessage(""), 3000)
+  const handleSaveChanges = async () => {
+    try {
+      if (settings.admin.id) {
+        const payload = {
+          username: settings.admin.username,
+          email: settings.admin.email
+        }
+        // If password provided, separate endpoint might be needed or same modify
+        // userController.updateUser doesn't seem to handle password update based on previous view.
+        // It handles username and email.
+
+        await api.put(`/users/${settings.admin.id}`, payload)
+        setSaveMessage("Profile updated successfully!")
+
+        // Update local storage if username/email changed
+        const currentUser = JSON.parse(localStorage.getItem("user"))
+        const updatedUser = { ...currentUser, username: payload.username, email: payload.email }
+        localStorage.setItem("user", JSON.stringify(updatedUser))
+
+        setTimeout(() => setSaveMessage(""), 3000)
+      } else {
+        alert("User ID not found. Please re-login.")
+      }
+    } catch (error) {
+      console.error(error)
+      alert("Failed to update profile")
+    }
   }
 
   const handleResetDefaults = () => {
@@ -130,7 +183,8 @@ export default function Setting() {
           {/* Admin Profile */}
           <SectionCard title="Admin Profile" expanded={expandedSections.admin} toggle={() => toggleSection("admin")}>
             <div className="space-y-4">
-              {["name", "username", "email", "password"].map((field) => (
+              {/* Note: 'name' field removed from defaults as backend uses username */}
+              {["username", "email"].map((field) => (
                 <InputField
                   key={field}
                   label={field === "password" ? "New Password" : capitalize(field)}
@@ -140,6 +194,9 @@ export default function Setting() {
                   onChange={(v) => handleAdminChange(field, v)}
                 />
               ))}
+              <div className="p-2 bg-yellow-50 text-yellow-700 text-sm rounded">
+                Note: Password change requires using the "Forgot Password" flow or a dedicated update password page.
+              </div>
             </div>
           </SectionCard>
 

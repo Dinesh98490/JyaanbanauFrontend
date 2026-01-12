@@ -1,33 +1,78 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import DietPlansGrid from "../components/Diets/DietsPlansGrid"
 import AddDietForm from "../components/Diets/AddDietForm"
 import { Plus } from "lucide-react"
+import api from "../api/api"
 
 export default function AdminDiets() {
-  const [customDiets, setCustomDiets] = useState([])
+  const [diets, setDiets] = useState([])
   const [showForm, setShowForm] = useState(false)
   const [editingDiet, setEditingDiet] = useState(null)
+  const [loading, setLoading] = useState(true)
 
-  const handleAddDiet = (newDiet) => {
-    if (editingDiet) {
-      setCustomDiets((prev) =>
-        prev.map((diet) =>
-          diet.id === editingDiet.id
-            ? { ...newDiet, id: editingDiet.id }
-            : diet
-        )
-      )
-      setEditingDiet(null)
-    } else {
-      setCustomDiets((prev) => [newDiet, ...prev])
+  const fetchDiets = async () => {
+    try {
+      const response = await api.get("/diets")
+      setDiets(response.data.data || [])
+    } catch (error) {
+      console.error("Error fetching diets:", error)
+    } finally {
+      setLoading(false)
     }
-    setShowForm(false)
   }
 
-  const handleDeleteDiet = (dietId) => {
-    setCustomDiets((prev) =>
-      prev.filter((diet) => diet.id !== dietId)
-    )
+  useEffect(() => {
+    fetchDiets()
+  }, [])
+
+  const handleAddDiet = async (dietData) => {
+    try {
+      const formData = new FormData()
+      formData.append("planName", dietData.name)
+      formData.append("proteinLevel", dietData.protein)
+      formData.append("dailyCalories", dietData.calories)
+      formData.append("description", dietData.description)
+
+      // Append image file if exists
+      if (dietData.imageFile) {
+        formData.append("image", dietData.imageFile)
+      }
+
+      if (editingDiet) {
+        // Update existing diet
+        const response = await api.put(`/diets/${editingDiet.id || editingDiet._id}`, formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        })
+        setDiets((prev) =>
+          prev.map((diet) =>
+            (diet.id === editingDiet.id || diet._id === editingDiet._id) ? response.data.data : diet
+          )
+        )
+        setEditingDiet(null)
+      } else {
+        // Create new diet
+        const response = await api.post("/diets", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        })
+        setDiets((prev) => [response.data.data, ...prev])
+      }
+      setShowForm(false)
+    } catch (error) {
+      console.error("Error saving diet:", error)
+      alert("Failed to save diet plan")
+    }
+  }
+
+  const handleDeleteDiet = async (dietId) => {
+    if (window.confirm("Are you sure you want to delete this diet plan?")) {
+      try {
+        await api.delete(`/diets/${dietId}`)
+        setDiets((prev) => prev.filter((diet) => (diet.id !== dietId && diet._id !== dietId)))
+      } catch (error) {
+        console.error("Error deleting diet:", error)
+        alert("Failed to delete diet plan")
+      }
+    }
   }
 
   const handleEditDiet = (diet) => {
@@ -43,7 +88,7 @@ export default function AdminDiets() {
           <div>
             <h1 className="text-4xl font-bold">Fitness Diet Plans</h1>
             <p className="text-gray-500">
-              Choose the perfect diet plan
+              Manage diet plans for your members
             </p>
           </div>
 
@@ -56,7 +101,7 @@ export default function AdminDiets() {
             className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
           >
             <Plus className="w-5 h-5" />
-            Add Diet Plan
+            {showForm ? "Cancel" : "Add Diet Plan"}
           </button>
         </div>
       </div>
@@ -76,12 +121,16 @@ export default function AdminDiets() {
         )}
 
         {/* Diet Plans Grid */}
-        <DietPlansGrid
-          plans={customDiets}
-          onEdit={handleEditDiet}
-          onDelete={handleDeleteDiet}
-          isCustom
-        />
+        {loading ? (
+          <div className="text-center py-10">Loading diet plans...</div>
+        ) : (
+          <DietPlansGrid
+            plans={diets}
+            onEdit={handleEditDiet}
+            onDelete={handleDeleteDiet}
+            isCustom
+          />
+        )}
       </div>
     </main>
   )

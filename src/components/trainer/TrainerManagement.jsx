@@ -106,29 +106,35 @@ export default function TrainersManagement() {
     // We map fullName -> name.
 
     try {
-      const payload = {
-        name: trainerData.fullName,
-        email: trainerData.email,
-        phone: trainerData.phone,
-        specialization: trainerData.specialization,
-        experience: trainerData.experience
+      // Create FormData for file upload
+      const formData = new FormData()
+      formData.append("name", trainerData.fullName)
+      formData.append("email", trainerData.email)
+      formData.append("phone", trainerData.phone)
+      formData.append("specialization", trainerData.specialization)
+      formData.append("experience", trainerData.experience)
+
+      // Only append photo if it's a File object (new upload)
+      // TrainerModal passes the raw file in `photoFile`
+      if (trainerData.photoFile instanceof File) {
+        formData.append("photo", trainerData.photoFile)
       }
 
-      // Handling file upload usually requires FormData.
-      // If trainerData.photo is a File object, we use FormData.
-      // For simplicity in this step, I'll send JSON (no photo update support in this quick patch unless used FormData).
-      // If the user wants robust photo upload, I'd need to check TrainerModal implementation.
-      // I will assume JSON update for text fields for now.
+      const config = {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        }
+      }
 
       if (modalMode === "add") {
-        await api.post('/trainers', payload) // Might fail if backend requires photo as multipart
+        await api.post('/trainers', formData, config)
       } else if (modalMode === "edit" && selectedTrainer) {
-        await api.put(`/trainers/${selectedTrainer.id}`, payload)
+        await api.put(`/trainers/${selectedTrainer.id}`, formData, config)
       }
       fetchTrainers()
     } catch (error) {
       console.error("Error saving trainer:", error)
-      alert("Failed to save trainer. Note: Photo upload might not be supported in this mode.")
+      alert("Failed to save trainer.")
     }
 
     setTrainerModalOpen(false)

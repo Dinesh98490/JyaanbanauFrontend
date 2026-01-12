@@ -11,6 +11,7 @@ export default function TrainerModal({ isOpen, mode, trainer, onSave, onClose })
     experience: 1,
     status: "Active",
     photo: "",
+    photoFile: null,
   })
 
   const fileInputRef = useRef(null)
@@ -28,6 +29,7 @@ export default function TrainerModal({ isOpen, mode, trainer, onSave, onClose })
         experience: 1,
         status: "Active",
         photo: "",
+        photoFile: null,
       })
     }
   }, [trainer, isOpen])
@@ -45,7 +47,7 @@ export default function TrainerModal({ isOpen, mode, trainer, onSave, onClose })
     if (file) {
       const reader = new FileReader()
       reader.onloadend = () => {
-        setFormData((prev) => ({ ...prev, photo: reader.result }))
+        setFormData((prev) => ({ ...prev, photo: reader.result, photoFile: file }))
       }
       reader.readAsDataURL(file)
     }

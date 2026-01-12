@@ -8,6 +8,7 @@ export default function AddDietForm({ onAddDiet, editingDiet, onCancel }) {
     calories: "",
     description: "",
     imageUrl: "",
+    imageFile: null,
   })
   const [imagePreview, setImagePreview] = useState("")
   const [imageInputType, setImageInputType] = useState("file")
@@ -33,10 +34,13 @@ export default function AddDietForm({ onAddDiet, editingDiet, onCancel }) {
   const handleImageUpload = (e) => {
     const file = e.target.files?.[0]
     if (!file) return
+
+    // Store file object for submission
+    setFormData((prev) => ({ ...prev, imageFile: file }))
+
     const reader = new FileReader()
     reader.onloadend = () => {
       setImagePreview(reader.result)
-      setFormData((prev) => ({ ...prev, imageUrl: reader.result }))
     }
     reader.readAsDataURL(file)
   }
@@ -44,12 +48,12 @@ export default function AddDietForm({ onAddDiet, editingDiet, onCancel }) {
   const handleImageUrlChange = (e) => {
     const url = e.target.value
     setImagePreview(url)
-    setFormData((prev) => ({ ...prev, imageUrl: url }))
+    setFormData((prev) => ({ ...prev, imageUrl: url, imageFile: null }))
   }
 
   const clearImage = () => {
     setImagePreview("")
-    setFormData((prev) => ({ ...prev, imageUrl: "" }))
+    setFormData((prev) => ({ ...prev, imageUrl: "", imageFile: null }))
   }
 
   const handleSubmit = (e) => {
@@ -59,19 +63,24 @@ export default function AddDietForm({ onAddDiet, editingDiet, onCancel }) {
       return
     }
 
-    const newDiet = {
-      id: editingDiet?.id || Date.now().toString(),
+    const dataToSubmit = {
       name: formData.name,
       protein: formData.protein,
       calories: parseInt(formData.calories),
       description: formData.description,
-      imageUrl: formData.imageUrl || "/diet-plan.jpg",
+      imageUrl: formData.imageUrl,
+      imageFile: formData.imageFile, // Pass the file
     }
 
-    onAddDiet(newDiet)
+    // For edit mode, we preserve ID
+    if (editingDiet) {
+      dataToSubmit.id = editingDiet.id || editingDiet._id;
+    }
+
+    onAddDiet(dataToSubmit)
 
     // Reset form
-    setFormData({ name: "", protein: "", calories: "", description: "", imageUrl: "" })
+    setFormData({ name: "", protein: "", calories: "", description: "", imageUrl: "", imageFile: null })
     setImagePreview("")
   }
 
@@ -129,22 +138,20 @@ export default function AddDietForm({ onAddDiet, editingDiet, onCancel }) {
               <button
                 type="button"
                 onClick={() => setImageInputType("file")}
-                className={`flex-1 px-3 py-2 rounded-md border ${
-                  imageInputType === "file"
-                    ? "bg-blue-600 text-white"
-                    : "bg-white text-blue-600"
-                }`}
+                className={`flex-1 px-3 py-2 rounded-md border ${imageInputType === "file"
+                  ? "bg-blue-600 text-white"
+                  : "bg-white text-blue-600"
+                  }`}
               >
                 Upload
               </button>
               <button
                 type="button"
                 onClick={() => setImageInputType("url")}
-                className={`flex-1 px-3 py-2 rounded-md border ${
-                  imageInputType === "url"
-                    ? "bg-blue-600 text-white"
-                    : "bg-white text-blue-600"
-                }`}
+                className={`flex-1 px-3 py-2 rounded-md border ${imageInputType === "url"
+                  ? "bg-blue-600 text-white"
+                  : "bg-white text-blue-600"
+                  }`}
               >
                 URL
               </button>
