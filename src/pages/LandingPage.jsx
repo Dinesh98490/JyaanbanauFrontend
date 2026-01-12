@@ -2,15 +2,20 @@ import React from "react";
 import { Check, Users, Target, Calendar, Dumbbell, CreditCard, Shield, Star } from "lucide-react";
 import { Element } from "react-scroll";
 import { IMAGE_PATHS } from "../common/ImageConstant";
+import { useNavigate } from "react-router-dom";
 
 export default function LandingPage() {
+  
   const bgColor = "bg-[#EFF6FF]";
 
-  // Hero Section
-  const Hero = () => (
+const Hero = () => {
+  const authnavigate = useNavigate();
+
+  return (
     <section className={`${bgColor} min-h-screen flex items-center py-16 md:py-24`}>
       <div className="max-w-7xl mx-auto px-4 w-full">
         <div className="grid md:grid-cols-2 gap-12 items-center">
+
           <div className="space-y-6">
             <h1 className="text-[64px] font-anton font-bold leading-tight">
               <span className="block">Manage</span>
@@ -20,27 +25,37 @@ export default function LandingPage() {
               </span>
               <span className="block">JyaanBanau</span>
             </h1>
+
             <p className="text-lg text-muted-foreground leading-relaxed">
               All-in-one gym management for owners, coaches, and members. Streamline operations and grow your business.
             </p>
-            <button className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 w-full md:w-auto font-medium transition" >
-              Get Started
 
-              
+            <button
+              onClick={() => authnavigate("/login")}
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 w-full md:w-auto font-medium transition"
+            >
+              Get Started
             </button>
           </div>
 
-          <div className="rounded-lg overflow-hidden aspect-square md:aspect-auto md:h-[500px] flex items-center justify-center">
+          <div className="rounded-lg overflow-hidden aspect-square md:h-[500px] flex items-center justify-center">
             <img
               src={IMAGE_PATHS.landingimage}
               alt="jyaanbanau"
               className="w-full h-full object-cover"
             />
           </div>
+
         </div>
       </div>
     </section>
   );
+};
+
+
+
+
+
 
 
 
