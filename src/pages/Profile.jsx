@@ -18,6 +18,7 @@ export default function Profile() {
   const [profileImage, setProfileImage] = useState("/placeholder.svg")
   const [userInfo, setUserInfo] = useState({ username: "", email: "" })
   const [membership, setMembership] = useState(null)
+  const [uploadingImage, setUploadingImage] = useState(false)
 
   // Edit State
   const [isEditing, setIsEditing] = useState(false)
@@ -28,13 +29,28 @@ export default function Profile() {
   useEffect(() => {
     const username = localStorage.getItem("username")
     const email = localStorage.getItem("email")
+    const userId = localStorage.getItem("userId")
     setUserInfo({ username: username || "Customer", email: email || "user@example.com" })
     setEditForm({ username: username || "", email: email || "" })
 
     if (username) {
       fetchMembership(username)
     }
+    if (userId) {
+      fetchUserProfile(userId)
+    }
   }, [])
+
+  const fetchUserProfile = async (userId) => {
+    try {
+      const response = await api.get(`/users/${userId}`)
+      if (response.data.user && response.data.user.profileImage) {
+        setProfileImage(`http://localhost:5001${response.data.user.profileImage}`)
+      }
+    } catch (error) {
+      console.error("Error fetching user profile:", error)
+    }
+  }
 
   const fetchMembership = async (username) => {
     try {
@@ -92,8 +108,45 @@ export default function Profile() {
     }
   }
 
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (!file.type.startsWith("image/")) {
+      alert("Please upload an image file")
+      return
+    }
+
+    setUploadingImage(true)
+
+    try {
+      const userId = localStorage.getItem("userId")
+      if (!userId) {
+        alert("User ID missing. Please login again.")
+        return
+      }
+
+      const formData = new FormData()
+      formData.append("profileImage", file)
+
+      const response = await api.post(`/users/${userId}/upload-profile-image`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      })
+
+      if (response.data.success) {
+        setProfileImage(`http://localhost:5001${response.data.user.profileImage}`)
+        alert("Profile image updated successfully!")
+      }
+    } catch (error) {
+      console.error("Image upload failed:", error)
+      alert("Failed to upload image. Please try again.")
+    } finally {
+      setUploadingImage(false)
+    }
+  }
+
   return (
-    
+
     <div className="min-h-screen bg-[#EFF6FF] mt-8">
 
       <div className="mx-auto max-w-7xl space-y-6">
@@ -107,9 +160,16 @@ export default function Profile() {
                 alt="Customer"
                 className="h-20 w-20 rounded-full border-4 border-white object-cover"
               />
-              <div className="absolute -bottom-1 -right-1 rounded-full bg-black p-1.5 cursor-pointer">
+              <label htmlFor="profile-upload-header" className="absolute -bottom-1 -right-1 rounded-full bg-black p-1.5 cursor-pointer hover:bg-gray-800">
                 <Camera className="h-3 w-3 text-white" />
-              </div>
+                <input
+                  id="profile-upload-header"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
+              </label>
             </div>
             <div className="space-y-1">
               <h1 className="text-2xl font-bold text-gray-900 capitalize">{userInfo.username}</h1>
@@ -157,14 +217,29 @@ export default function Profile() {
                   alt="Profile"
                   className="h-24 w-24 rounded-full object-cover"
                 />
-                <div className="absolute -bottom-2 -right-2 rounded-full bg-white p-2 shadow-md cursor-pointer">
+                <label htmlFor="profile-upload-main" className="absolute -bottom-2 -right-2 rounded-full bg-white p-2 shadow-md cursor-pointer hover:bg-gray-100">
                   <Camera className="h-5 w-5 text-gray-500" />
-                </div>
+                  <input
+                    id="profile-upload-main"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
+                </label>
               </div>
               <div className="flex-1">
-                <button className="bg-[#2563eb] hover:bg-[#1d4ed8] text-white px-4 py-2 rounded-lg">
-                  Change Photo
-                </button>
+                <label htmlFor="profile-upload-button" className="bg-[#2563eb] hover:bg-[#1d4ed8] text-white px-4 py-2 rounded-lg cursor-pointer inline-block">
+                  {uploadingImage ? "Uploading..." : "Change Photo"}
+                  <input
+                    id="profile-upload-button"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                    disabled={uploadingImage}
+                  />
+                </label>
               </div>
             </div>
 

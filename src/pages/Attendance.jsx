@@ -28,9 +28,15 @@ export default function Attendance() {
   const fetchUsers = async () => {
     try {
       const response = await api.get("/users")
+      console.log("Users fetched:", response.data)
       setUsers(response.data.users || [])
     } catch (error) {
       console.error("Error fetching users:", error)
+      console.error("Error response:", error.response?.data)
+      // If authentication fails, try to continue with empty users list
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        console.warn("Authentication failed when fetching users. Make sure you're logged in as admin.")
+      }
     }
   }
 
